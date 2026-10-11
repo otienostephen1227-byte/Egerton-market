@@ -48,6 +48,9 @@ textarea{min-height:90px;resize:vertical}
 .notice.error{background:#fff0ee;color:#a32f22}
 footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 .hidden{display:none!important}
+.password-wrap{display:flex;gap:8px;align-items:stretch}
+.password-wrap input{flex:1;min-width:0}
+.password-toggle{flex:0 0 auto;background:var(--light);color:var(--green);padding:0 13px;border:1px solid #cbd8ce;border-radius:10px;font-size:13px}
 .pill{border-radius:999px;padding:6px 9px;background:#e9f5ed;color:#176b45;font-size:11px;font-weight:700}
 .sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 12px}
 .sectionhead h2{margin:0}
@@ -160,7 +163,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <form id="authForm">
       <div id="nameField" class="hidden"><label for="authName">Full name</label><input id="authName" maxlength="70" autocomplete="name" placeholder="Your name"></div>
       <label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
-      <label for="authPassword">Password</label><input id="authPassword" type="password" minlength="8" autocomplete="current-password" placeholder="At least 8 characters" required>
+      <label for="authPassword">Password</label>
+      <div class="password-wrap"><input id="authPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" required><button type="button" class="password-toggle" data-toggle-password="authPassword" aria-label="Show password" aria-pressed="false">Show</button></div>
+      <div id="confirmPasswordField" class="hidden"><label for="authConfirmPassword">Confirm password</label><div class="password-wrap"><input id="authConfirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Enter the same password again"><button type="button" class="password-toggle" data-toggle-password="authConfirmPassword" aria-label="Show confirmation password" aria-pressed="false">Show</button></div></div>
       <div class="actions"><button type="submit" id="authSubmit">Sign in</button><button type="button" class="secondary" id="forgotBtn">Forgot password?</button></div>
     </form>
     <p class="small" id="authSwitchText">New here? <a href="#" id="authSwitch">Create an account</a></p>
@@ -268,6 +273,9 @@ function setMode(mode) {
   $("authName").required = mode === "signup";
   $("authPassword").classList.toggle("hidden", mode === "forgot");
   $("authPassword").required = mode !== "forgot";
+  $("confirmPasswordField").classList.toggle("hidden", mode !== "signup");
+  $("authConfirmPassword").required = mode === "signup";
+  if (mode !== "signup") $("authConfirmPassword").value = "";
   $("forgotBtn").classList.toggle("hidden", mode !== "login");
   $("authSwitchText").classList.toggle("hidden", mode === "forgot");
   $("authSwitchText").innerHTML = mode === "signup"
@@ -314,6 +322,34 @@ function showMarketplaceForSignedIn(session) {
     $("mySoldCount").textContent = "—";
   }
 }
+// Keep the Supabase account visible when the classic profile renderer runs.
+const originalShowViewWithAuth = window.showView;
+window.showView = function(view) {
+  originalShowViewWithAuth(view);
+  if (view === "profile" && currentSession) {
+    const user = currentSession.user;
+    const email = user.email || "";
+    const name = user.user_metadata?.full_name || email.split("@")[0] || "Student";
+    $("profileSignedOut").classList.add("hidden");
+    $("profileSignedIn").classList.remove("hidden");
+    $("profileName").textContent = name;
+    $("profileEmail").textContent = email;
+    $("avatar").textContent = name.trim().charAt(0).toUpperCase() || "U";
+    $("headerAccount").textContent = "My profile";
+    let signout = $("supabaseSignOutButton");
+    if (!signout) {
+      signout = document.createElement("button");
+      signout.id = "supabaseSignOutButton";
+      signout.type = "button";
+      signout.className = "danger";
+      signout.textContent = "Sign out";
+      signout.addEventListener("click", () => window.logoutLocal());
+      $("profileSignedIn").appendChild(signout);
+    }
+    signout.classList.remove("hidden");
+  }
+};
+
 window.logoutLocal = async function() {
   if (!confirm("Sign out of Egerton Market?")) return;
   const { error } = await supabase.auth.signOut();
@@ -342,6 +378,17 @@ $("authSwitchText").addEventListener("click", event => {
   }
 }, true);
 
+document.querySelectorAll("[data-toggle-password]").forEach(button => {
+  button.addEventListener("click", () => {
+    const field = $(button.dataset.togglePassword);
+    const show = field.type === "password";
+    field.type = show ? "text" : "password";
+    button.textContent = show ? "Hide" : "Show";
+    button.setAttribute("aria-label", (show ? "Hide " : "Show ") + (field.id === "authPassword" ? "password" : "confirmation password"));
+    button.setAttribute("aria-pressed", String(show));
+  });
+});
+
 $("forgotBtn").addEventListener("click", () => setMode("forgot"));
 
 $("authForm").addEventListener("submit", async event => {
@@ -356,7 +403,10 @@ $("authForm").addEventListener("submit", async event => {
   try {
     if (mode === "signup") {
       const name = $("authName").value.trim();
+      const confirmPassword = $("authConfirmPassword").value;
       if (!name) throw new Error("Please enter your full name.");
+      if (password.length < 8) throw new Error("Use a password with at least 8 characters.");
+      if (password !== confirmPassword) throw new Error("The passwords do not match. Please check both fields.");
       const { data, error } = await supabase.auth.signUp({
         email, password,
         options: { data: { full_name: name }, emailRedirectTo: window.location.origin }
