@@ -144,14 +144,14 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <p>Sign in or create an account to manage your marketplace identity.</p>
       <button type="button" onclick="showAuth('signup')">Create account</button>
       <button class="secondary" type="button" onclick="showAuth('login')">Sign in</button>
-      <p class="small">Authentication is not connected yet in this standalone HTML version.</p>
+      <p class="small">Sign in to access your marketplace profile.</p>
     </div>
     <div id="profileSignedIn" class="hidden">
       <div class="profilebox"><div class="avatar" id="avatar">U</div><div><h3 id="profileName">Marketplace user</h3><p class="small" id="profileEmail"></p></div></div>
       <div class="statrow"><div class="stat"><strong id="myCount">0</strong><span>My listings</span></div><div class="stat"><strong id="mySavedCount">0</strong><span>Saved</span></div><div class="stat"><strong id="mySoldCount">0</strong><span>Sold</span></div></div>
-      <button class="secondary" type="button" onclick="editLocalProfile()">Edit local profile</button>
-      <button class="danger" type="button" onclick="logoutLocal()">Log out</button>
-      <p class="small">This is a local demo profile, not a verified online account. Real authentication requires Supabase setup.</p>
+      <button class="secondary hidden" type="button" onclick="editLocalProfile()">Edit local profile</button>
+      <button class="danger" type="button" onclick="logoutLocal()">Sign out</button>
+      <p class="small">Signed in with Supabase. Listings and favourites are still stored on this device until shared database storage is configured.</p>
     </div>
     <hr>
     <h3>Marketplace safety</h3><p class="small">Check items before paying, meet in a safe public place, and never share passwords or payment PINs with a buyer or seller.</p>
@@ -169,7 +169,6 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="actions"><button type="submit" id="authSubmit">Sign in</button><button type="button" class="secondary" id="forgotBtn">Forgot password?</button></div>
     </form>
     <p class="small" id="authSwitchText">New here? <a href="#" id="authSwitch">Create an account</a></p>
-    <p class="small">Account form preview only: this standalone file does not securely create online accounts until a real authentication service is connected.</p>
   </section>
 
   <section class="intro" style="margin-top:20px">
@@ -217,7 +216,32 @@ function renderInto(area,items,emptyText){area.replaceChildren();if(!items.lengt
 function renderListings(){const q=$("search").value.trim().toLowerCase(),cat=$("filter").value;const visible=listings.filter(i=>[i.title,i.category,i.description,i.seller,i.location].join(" ").toLowerCase().includes(q)&&(!cat||i.category===cat));$("listingCount").textContent=listings.length+" item"+(listings.length===1?"":"s");renderInto($("listings"),visible,listings.length?"No matching items. Try another search.":"No listings yet. Be the first to sell something!")}
 function renderSaved(){renderInto($("savedListings"),listings.filter(i=>savedIds.includes(i.id)),"No saved items yet. Tap ♡ Save on a product to keep it here.")}
 function toggleSaved(id){savedIds=savedIds.includes(id)?savedIds.filter(x=>x!==id):[...savedIds,id];try{localStorage.setItem(SAVED_KEY,JSON.stringify(savedIds))}catch(e){}renderListings();renderSaved();renderProfile()}
-function renderProfile(){localProfile=safeRead(PROFILE_KEY,null);$("profileSignedOut").classList.toggle("hidden",!localProfile);$("profileSignedIn").classList.toggle("hidden",!localProfile);$("headerAccount").textContent=localProfile?"My profile":"Sign in";if(localProfile){$("profileName").textContent=localProfile.name;$("profileEmail").textContent=localProfile.email;$("avatar").textContent=(localProfile.name||"U").trim().charAt(0).toUpperCase();$("myCount").textContent=listings.filter(i=>i.seller===localProfile.name).length;$("mySavedCount").textContent=savedIds.length;$("mySoldCount").textContent=listings.filter(i=>i.seller===localProfile.name&&i.sold).length}}
+function renderProfile(){
+  // Supabase session is the source of truth for online authentication.
+  const session=window.__egertonSession||null;
+  if(session&&session.user){
+    const email=session.user.email||"";
+    const name=session.user.user_metadata?.full_name||email.split("@")[0]||"Student";
+    $("profileSignedOut").classList.add("hidden");
+    $("profileSignedIn").classList.remove("hidden");
+    $("headerAccount").textContent="My profile";
+    $("profileName").textContent=name;
+    $("profileEmail").textContent=email;
+    $("avatar").textContent=(name.trim().charAt(0)||"U").toUpperCase();
+    $("myCount").textContent=listings.filter(i=>i.seller===name).length;
+    $("mySavedCount").textContent=savedIds.length;
+    $("mySoldCount").textContent=listings.filter(i=>i.seller===name&&i.sold).length;
+    const edit=$("profileSignedIn").querySelector('button[onclick="editLocalProfile()"]');
+    if(edit) edit.classList.add("hidden");
+    const note=$("profileSignedIn").querySelector(".small:not(#profileEmail)");
+    if(note) note.textContent="Signed in with Supabase. Listings and favourites are still stored on this device until shared database storage is configured.";
+    return;
+  }
+  localProfile=safeRead(PROFILE_KEY,null);
+  $("profileSignedOut").classList.remove("hidden");
+  $("profileSignedIn").classList.add("hidden");
+  $("headerAccount").textContent="Sign in";
+}
 window.editLocalProfile=function(){if(!localProfile)return;const name=prompt("Display name",localProfile.name);if(name&&name.trim()){localProfile.name=name.trim();localStorage.setItem(PROFILE_KEY,JSON.stringify(localProfile));renderProfile()}};
 window.logoutLocal=function(){if(confirm("Log out of this local demo profile?")){localStorage.removeItem(PROFILE_KEY);renderProfile();notify("Local profile signed out. This was not an online account.");showView("profile")}};
 $("photo").addEventListener("change",async e=>{hideNotice();selectedImage="";const f=e.target.files&&e.target.files[0];if(!f)return;if(f.size>12*1024*1024){e.target.value="";notify("Please choose an image smaller than 12 MB.",true);return}try{selectedImage=await compressImage(f);$("preview").src=selectedImage;$("preview").style.display="block"}catch(err){notify(err.message,true)}});
@@ -284,6 +308,7 @@ function setMode(mode) {
   clearAuthMessage();
 }
 function hideMarketplaceForSignedOut() {
+  window.__egertonSession = null;
   ["homeView","sellView","savedView","chatsView","profileView"].forEach(id => $(id).classList.add("hidden"));
   $("authView").classList.remove("hidden");
   document.querySelector(".bottomnav").classList.add("hidden");
@@ -295,6 +320,7 @@ function hideMarketplaceForSignedOut() {
 }
 function showMarketplaceForSignedIn(session) {
   currentSession = session;
+  window.__egertonSession = session;
   $("authView").classList.add("hidden");
   document.querySelector(".bottomnav").classList.remove("hidden");
   $("headerAccount").classList.remove("hidden");
@@ -322,34 +348,6 @@ function showMarketplaceForSignedIn(session) {
     $("mySoldCount").textContent = "—";
   }
 }
-// Keep the Supabase account visible when the classic profile renderer runs.
-const originalShowViewWithAuth = window.showView;
-window.showView = function(view) {
-  originalShowViewWithAuth(view);
-  if (view === "profile" && currentSession) {
-    const user = currentSession.user;
-    const email = user.email || "";
-    const name = user.user_metadata?.full_name || email.split("@")[0] || "Student";
-    $("profileSignedOut").classList.add("hidden");
-    $("profileSignedIn").classList.remove("hidden");
-    $("profileName").textContent = name;
-    $("profileEmail").textContent = email;
-    $("avatar").textContent = name.trim().charAt(0).toUpperCase() || "U";
-    $("headerAccount").textContent = "My profile";
-    let signout = $("supabaseSignOutButton");
-    if (!signout) {
-      signout = document.createElement("button");
-      signout.id = "supabaseSignOutButton";
-      signout.type = "button";
-      signout.className = "danger";
-      signout.textContent = "Sign out";
-      signout.addEventListener("click", () => window.logoutLocal());
-      $("profileSignedIn").appendChild(signout);
-    }
-    signout.classList.remove("hidden");
-  }
-};
-
 window.logoutLocal = async function() {
   if (!confirm("Sign out of Egerton Market?")) return;
   const { error } = await supabase.auth.signOut();
