@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#176b45">
+<title>Egerton Market | Campus Buy & Sell</title>
+<style>
+:root{--green:#176b45;--green-dark:#105235;--light:#e9f5ed;--ink:#17251d;--muted:#65736a;--white:#fff;--border:#e0e8e2;--bg:#f4f7f4;--danger:#a32f22}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}
+button:hover{background:var(--green-dark)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:var(--light);color:var(--green)}.secondary:hover{background:#d7ebdd}
+.danger{background:#fff0ee;color:var(--danger)}
+header{background:var(--green);color:white;padding:16px}
+.wrap{max-width:1100px;margin:auto}
+.headerrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:23px;font-weight:800;letter-spacing:-.4px}
+.tagline{margin:5px 0 0;font-size:13px;color:#e1f3e6}
+.headeractions{display:flex;gap:8px;align-items:center}
+main{max-width:1100px;margin:auto;padding:16px 16px 100px}
+section{scroll-margin-top:14px}
+.intro,.panel,.toolbar{background:white;border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.intro{background:linear-gradient(135deg,#fff,#edf7ef)}
+h2{font-size:20px;margin:0 0 14px}h3{font-size:16px;margin:0 0 8px}
+.small{font-size:13px;color:var(--muted);line-height:1.5}
+label{display:block;font-size:13px;font-weight:700;margin:13px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #cbd8ce;border-radius:10px;background:white;color:var(--ink);min-width:0}
+textarea{min-height:90px;resize:vertical}
+.gridform{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.full{grid-column:1/-1}
+#preview{display:none;width:100%;max-height:240px;object-fit:contain;background:#f1f4f1;border-radius:10px;margin-top:10px}
+.toolbar{display:grid;grid-template-columns:1fr 190px;gap:10px}
+.listings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.product{background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.product img{width:100%;height:180px;object-fit:cover;background:#eaf0eb}
+.productbody{padding:13px;display:flex;flex-direction:column;flex:1}
+.price{font-size:21px;font-weight:800;color:var(--green);margin:8px 0}
+.tag{display:inline-block;width:max-content;max-width:100%;font-size:11px;background:var(--light);color:var(--green);padding:5px 8px;border-radius:20px;margin:0 5px 8px 0}
+.sold{background:#eee;color:#555}
+.product p{overflow-wrap:anywhere;line-height:1.45;margin:6px 0}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:12px}
+.actions button{flex:1;min-width:100px;font-size:12px;padding:10px 8px}
+.empty{padding:30px;text-align:center;background:white;border:1px dashed var(--border);border-radius:12px;color:var(--muted);grid-column:1/-1}
+.notice{display:none;background:#e9f5ed;color:#145d39;padding:12px;border-radius:10px;margin-bottom:12px;line-height:1.45}
+.notice.error{background:#fff0ee;color:#a32f22}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
+.hidden{display:none!important}
+.password-wrap{display:flex;gap:8px;align-items:stretch}
+.password-wrap input{flex:1;min-width:0}
+.password-toggle{flex:0 0 auto;background:var(--light);color:var(--green);padding:0 13px;border:1px solid #cbd8ce;border-radius:10px;font-size:13px}
+.pill{border-radius:999px;padding:6px 9px;background:#e9f5ed;color:#176b45;font-size:11px;font-weight:700}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 12px}
+.sectionhead h2{margin:0}
+.profilebox{display:flex;align-items:center;gap:14px}
+.avatar{width:60px;height:60px;border-radius:50%;background:var(--light);color:var(--green);display:grid;place-items:center;font-size:24px;font-weight:800;flex-shrink:0}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat{background:#f5f8f5;border-radius:12px;padding:12px;text-align:center}
+.stat strong{display:block;font-size:20px;color:var(--green)}
+.stat span{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{flex:1;min-width:100px}
+.bottomnav{position:fixed;z-index:20;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:7px max(6px,env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom));box-shadow:0 -5px 20px #15271b0b}
+.bottomnav button{background:transparent;color:var(--muted);padding:7px 2px;border-radius:10px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:3px;flex-direction:column}
+.bottomnav button.active{background:var(--light);color:var(--green)}
+.bottomnav .navicon{font-size:19px;line-height:1}
+hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.authcard{max-width:520px;margin:0 auto}
+.chatlayout{display:grid;grid-template-columns:260px 1fr;gap:12px}
+.chatlist,.chatwindow{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+.chatlist{padding:12px}
+.chatitem{padding:12px;border-radius:10px;background:#f5f8f5;margin-top:8px;cursor:pointer}
+.chatwindow{padding:14px;min-height:220px}
+.chatbubble{background:#eef6f0;border-radius:12px;padding:10px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}
+.chatbubble.mine{margin-left:auto;background:#176b45;color:white}
+@media(max-width:760px){.listings{grid-template-columns:repeat(2,minmax(0,1fr))}.product img{height:150px}.chatlayout{grid-template-columns:1fr}.headerrow{align-items:flex-start}.brand{font-size:21px}}
+@media(max-width:480px){main{padding:12px 12px 100px}.listings{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.product img{height:125px}.productbody{padding:10px}.price{font-size:17px}.product h3{font-size:14px}.actions button{min-width:0;font-size:11px;padding:9px 6px}.gridform,.toolbar{grid-template-columns:1fr}.full{grid-column:auto}.brand{font-size:19px}.tagline{max-width:220px}.headeractions button{font-size:11px;padding:9px}.intro,.panel,.toolbar{padding:14px}.statrow{gap:6px}.stat{padding:9px 4px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap headerrow">
+    <div><div class="brand">🌿 Egerton Market</div><p class="tagline">Buy. Sell. Connect. Right here on campus.</p></div>
+    <div class="headeractions"><button class="secondary" id="headerAccount" type="button">Sign in</button></div>
+  </div>
+</header>
+
+<main>
+  <section id="homeView">
+    <div class="intro">
+      <span class="pill">CAMPUS MARKETPLACE</span>
+      <h2 style="margin-top:12px">Find it. Buy it. Sell it.</h2>
+      <p>Discover electronics, books, clothes, hostel essentials, furniture and services around Egerton University.</p>
+      <p class="small">Browse listings shared by students. Sign in to publish an item with a photo stored online.</p>
+      <button type="button" onclick="document.getElementById('sellView').scrollIntoView({behavior:'smooth'})">＋ Sell an item</button>
+    </div>
+    <div id="cloudStatus" class="notice" role="status" aria-live="polite"></div><div class="sectionhead"><h2>🛍️ Items for sale</h2><span class="pill" id="listingCount">0 items</span></div>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search products, sellers or locations..." aria-label="Search listings">
+      <select id="filter" aria-label="Filter by category"><option value="">All categories</option><option>Electronics</option><option>Books & Notes</option><option>Clothing & Shoes</option><option>Furniture</option><option>Hostel Essentials</option><option>Beauty</option><option>Food</option><option>Services</option><option>Other</option></select>
+    </div>
+    <div id="listings" class="listings"><div class="empty">Loading marketplace…</div></div>
+  </section>
+
+  <section id="sellView" class="panel">
+    <h2>📸 List something for sale</h2>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <form id="listingForm">
+      <div class="gridform">
+        <div class="full"><label for="photo">Product photo *</label><input id="photo" type="file" accept="image/*,.jpg,.jpeg,.png,.webp" required><img id="preview" alt="Product photo preview"><p class="small">Choose a photo from your gallery or take one with your camera.</p></div>
+        <div><label for="title">Product name *</label><input id="title" maxlength="80" placeholder="e.g. Used HP laptop" required></div>
+        <div><label for="category">Category *</label><select id="category" required><option value="">Choose category</option><option>Electronics</option><option>Books & Notes</option><option>Clothing & Shoes</option><option>Furniture</option><option>Hostel Essentials</option><option>Beauty</option><option>Food</option><option>Services</option><option>Other</option></select></div>
+        <div><label for="price">Price in KSh *</label><input id="price" type="number" min="1" max="100000000" step="1" placeholder="1500" required></div>
+        <div><label for="condition">Condition *</label><select id="condition" required><option>Secondhand - Good</option><option>Secondhand - Fair</option><option>Like New</option><option>Brand New</option></select></div>
+        <div class="full"><label for="description">Description *</label><textarea id="description" maxlength="1000" placeholder="Describe the item and collection arrangements." required></textarea></div>
+        <div><label for="seller">Your name *</label><input id="seller" maxlength="70" placeholder="Your name" required></div>
+        <div><label for="phone">Phone / WhatsApp number *</label><input id="phone" type="tel" maxlength="20" placeholder="07…, 01…, +2547… or +2541…" required></div>
+        <div class="full"><label for="location">Pickup location *</label><input id="location" maxlength="120" placeholder="e.g. Njoro campus, near the library" required></div>
+        <div class="full"><button id="submitBtn" type="submit">Publish listing</button><p class="small">Gallery tip: tap Choose File, then select Gallery/Photos or Files if your phone asks. Only share a phone number you are comfortable making public.</p></div>
+      </div>
+    </form>
+  </section>
+
+  <section id="savedView" class="hidden">
+    <div class="sectionhead"><h2>♥ Saved items</h2></div>
+    <p class="small">Your saved items are currently stored on this device.</p>
+    <div id="savedListings" class="listings"></div>
+  </section>
+
+  <section id="chatsView" class="panel hidden">
+    <h2>💬 Chats</h2>
+    <div class="notice" style="display:block">Chat preview: this version can open WhatsApp to contact a seller. Private in-app messaging requires a configured shared backend and user accounts.</div>
+    <div class="chatlayout">
+      <div class="chatlist"><strong>Conversations</strong><div class="chatitem"><strong>Contact a seller</strong><p class="small">Open any product and choose WhatsApp seller to start a conversation.</p></div></div>
+      <div class="chatwindow"><h3>Stay connected</h3><p class="small">Your private in-app inbox will appear here after Supabase authentication, database tables and messaging permissions are configured. No fake messages are shown.</p></div>
+    </div>
+  </section>
+
+  <section id="profileView" class="panel hidden">
+    <h2>👤 Your profile</h2>
+    <div id="profileSignedOut">
+      <p>Sign in or create an account to manage your marketplace identity.</p>
+      <button type="button" onclick="showAuth('signup')">Create account</button>
+      <button class="secondary" type="button" onclick="showAuth('login')">Sign in</button>
+      <p class="small">Sign in to access your marketplace profile.</p>
+    </div>
+    <div id="profileSignedIn" class="hidden">
+      <div class="profilebox"><div class="avatar" id="avatar">U</div><div><h3 id="profileName">Marketplace user</h3><p class="small" id="profileEmail"></p></div></div>
+      <div class="statrow"><div class="stat"><strong id="myCount">0</strong><span>My listings</span></div><div class="stat"><strong id="mySavedCount">0</strong><span>Saved</span></div><div class="stat"><strong id="mySoldCount">0</strong><span>Sold</span></div></div>
+      <button class="secondary hidden" type="button" onclick="editLocalProfile()">Edit local profile</button>
+      <button class="danger" type="button" onclick="logoutLocal()">Sign out</button>
+      <p class="small">Signed in with Supabase. Your listings are shared online; favourites remain on this device.</p>
+    </div>
+    <hr>
+    <h3>Marketplace safety</h3><p class="small">Check items before paying, meet in a safe public place, and never share passwords or payment PINs with a buyer or seller.</p>
+  </section>
+
+  <section id="authView" class="panel authcard hidden">
+    <div class="sectionhead"><h2 id="authTitle">Sign in</h2><button type="button" class="secondary" onclick="showView('profile')">Close</button></div>
+    <div id="authNotice" class="notice" role="status"></div>
+    <form id="authForm">
+      <div id="nameField" class="hidden"><label for="authName">Full name</label><input id="authName" maxlength="70" autocomplete="name" placeholder="Your name"></div>
+      <label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+      <label for="authPassword">Password</label>
+      <div class="password-wrap"><input id="authPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" required><button type="button" class="password-toggle" data-toggle-password="authPassword" aria-label="Show password" aria-pressed="false">Show</button></div>
+      <div id="confirmPasswordField" class="hidden"><label for="authConfirmPassword">Confirm password</label><div class="password-wrap"><input id="authConfirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Enter the same password again"><button type="button" class="password-toggle" data-toggle-password="authConfirmPassword" aria-label="Show confirmation password" aria-pressed="false">Show</button></div></div>
+      <div class="actions"><button type="submit" id="authSubmit">Sign in</button><button type="button" class="secondary" id="forgotBtn">Forgot password?</button></div>
+    </form>
+    <p class="small" id="authSwitchText">New here? <a href="#" id="authSwitch">Create an account</a></p>
+  </section>
+
+  <section class="intro" style="margin-top:20px">
+    <h2>🤝 Buy and sell safely</h2>
+    <p>1. Post a clear photo and accurate description.</p><p>2. Contact the seller and ask questions.</p><p>3. Agree on a price and meet in a safe public place.</p><p>4. Verify the item before completing payment.</p>
+  </section>
+</main>
+
+<footer>Egerton Market · Built for campus connections<br>Always verify items and meet in a safe public place.</footer>
+
+<nav class="bottomnav" aria-label="Main navigation">
+  <button class="active" data-view="home"><span class="navicon">⌂</span>Home</button>
+  <button data-view="saved"><span class="navicon">♡</span>Saved</button>
+  <button data-view="sell"><span class="navicon">＋</span>Sell</button>
+  <button data-view="chats"><span class="navicon">▤</span>Chats</button>
+  <button data-view="profile"><span class="navicon">◉</span>Profile</button>
+</nav>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const LIST_KEY="egerton_market_listings_v1";
+const SAVED_KEY="egerton_market_saved_v1";
+const PROFILE_KEY="egerton_market_local_profile_v1";
+let listings=[],savedIds=[],selectedImage="",authMode="login";
+let localProfile=null;
+
+function safeRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||"null");return v==null?fallback:v}catch(e){return fallback}}
+function notify(message,error=false){const el=$("notice");el.textContent=message;el.classList.toggle("error",error);el.style.display="block"}
+function hideNotice(){$("notice").style.display="none"}
+function phoneNormalize(phone){let n=String(phone||"").replace(/[^\d+]/g,"");if(n.startsWith("+"))n=n.slice(1);if(n.startsWith("0"))n="254"+n.slice(1);if(n.startsWith("7")||n.startsWith("1"))n="254"+n;return /^254[17]\d{8}$/.test(n)?n:""}
+function compressImage(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith("image/"))return reject(Error("Please choose a JPG, PNG, WEBP or other supported image from your gallery."));const reader=new FileReader();reader.onerror=()=>reject(Error("Could not read that image."));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(Error("Could not open that image."));img.onload=()=>{const scale=Math.min(1,1000/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.7))};img.src=reader.result};reader.readAsDataURL(file)})}
+function saveLocal(){try{localStorage.setItem(LIST_KEY,JSON.stringify(listings));return true}catch(e){notify("Device storage is full. Remove older listings or use smaller photos.",true);return false}}
+window.__getSelectedImage=()=>selectedImage;window.__clearSelectedImage=()=>{selectedImage=""};
+function textEl(tag,text,cls){const e=document.createElement(tag);e.textContent=text==null?"":String(text);if(cls)e.className=cls;return e}
+function showView(view){const views={home:"homeView",sell:"sellView",saved:"savedView",chats:"chatsView",profile:"profileView",auth:"authView"};Object.values(views).forEach(id=>$(id).classList.add("hidden"));$(views[view]||views.home).classList.remove("hidden");document.querySelectorAll(".bottomnav button").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="saved")renderSaved();if(view==="profile")renderProfile();if(view==="home")renderListings();window.scrollTo({top:0,behavior:"smooth"})}
+window.showView=showView;
+function showAuth(mode){authMode=mode;$("authTitle").textContent=mode==="signup"?"Create your account":mode==="forgot"?"Reset password":"Sign in";$("authSubmit").textContent=mode==="signup"?"Create account":mode==="forgot"?"Show reset instructions":"Sign in";$("nameField").classList.toggle("hidden",mode!=="signup");$("authPassword").classList.toggle("hidden",mode==="forgot");$("forgotBtn").classList.toggle("hidden",mode!=="login");$("authSwitchText").classList.toggle("hidden",mode==="forgot");$("authNotice").style.display="none";showView("auth")}
+window.showAuth=showAuth;
+function renderCard(item){const card=document.createElement("article");card.className="product";const img=document.createElement("img");img.src=item.photo;img.alt=item.title;img.loading="lazy";card.appendChild(img);const body=document.createElement("div");body.className="productbody";body.appendChild(textEl("span",item.category,"tag"));if(item.sold)body.appendChild(textEl("span","SOLD","tag sold"));body.appendChild(textEl("h3",item.title));body.appendChild(textEl("div","KSh "+Number(item.price).toLocaleString("en-KE"),"price"));body.appendChild(textEl("p",item.condition,"small"));body.appendChild(textEl("p",item.description));body.appendChild(textEl("p","📍 "+item.location,"small"));body.appendChild(textEl("p","Seller: "+item.seller,"small"));
+const actions=document.createElement("div");actions.className="actions";const phone=phoneNormalize(item.phone);const contact=document.createElement("button");contact.textContent="WhatsApp";contact.disabled=item.sold||!phone;contact.onclick=()=>{const msg="Hi "+item.seller+", I'm interested in your "+item.title+" listed on Egerton Market for KSh "+item.price+". Is it available?";window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener,noreferrer")};actions.appendChild(contact);
+const fav=document.createElement("button");fav.className="secondary";fav.textContent=savedIds.includes(item.id)?"♥ Saved":"♡ Save";fav.onclick=()=>toggleSaved(item.id);actions.appendChild(fav);
+const sold=document.createElement("button");sold.className="secondary";sold.textContent=item.sold?"Sold":"Mark sold";sold.disabled=item.sold;sold.onclick=()=>{if(window.markCloudListingSold){window.markCloudListingSold(item.id)}else notify("Connect to the marketplace database to update this listing.",true)};actions.appendChild(sold);body.appendChild(actions);card.appendChild(body);return card}
+function renderInto(area,items,emptyText){area.replaceChildren();if(!items.length){area.appendChild(textEl("div",emptyText,"empty"));return}items.forEach(item=>area.appendChild(renderCard(item)))}
+function renderListings(){const q=$("search").value.trim().toLowerCase(),cat=$("filter").value;const visible=listings.filter(i=>[i.title,i.category,i.description,i.seller,i.location].join(" ").toLowerCase().includes(q)&&(!cat||i.category===cat));$("listingCount").textContent=listings.length+" item"+(listings.length===1?"":"s");renderInto($("listings"),visible,listings.length?"No matching items. Try another search.":"No listings yet. Be the first to sell something!")}
+window.__setCloudListings=function(items){listings=Array.isArray(items)?items:[];renderListings();renderSaved();renderProfile()};
+window.__replaceOneCloudListing=function(item){const i=listings.findIndex(x=>x.id===item.id);if(i>=0)listings[i]=item;else listings.unshift(item);renderListings();renderSaved();renderProfile()};
+function renderSaved(){renderInto($("savedListings"),listings.filter(i=>savedIds.includes(i.id)),"No saved items yet. Tap ♡ Save on a product to keep it here.")}
+function toggleSaved(id){savedIds=savedIds.includes(id)?savedIds.filter(x=>x!==id):[...savedIds,id];try{localStorage.setItem(SAVED_KEY,JSON.stringify(savedIds))}catch(e){}renderListings();renderSaved();renderProfile()}
+function renderProfile(){
+  // Supabase session is the source of truth for online authentication.
+  const session=window.__egertonSession||null;
+  if(session&&session.user){
+    const email=session.user.email||"";
+    const name=session.user.user_metadata?.full_name||email.split("@")[0]||"Student";
+    $("profileSignedOut").classList.add("hidden");
+    $("profileSignedIn").classList.remove("hidden");
+    $("headerAccount").textContent="My profile";
+    $("profileName").textContent=name;
+    $("profileEmail").textContent=email;
+    $("avatar").textContent=(name.trim().charAt(0)||"U").toUpperCase();
+    $("myCount").textContent=listings.filter(i=>i.seller===name).length;
+    $("mySavedCount").textContent=savedIds.length;
+    $("mySoldCount").textContent=listings.filter(i=>i.seller===name&&i.sold).length;
+    const edit=$("profileSignedIn").querySelector('button[onclick="editLocalProfile()"]');
+    if(edit) edit.classList.add("hidden");
+    const note=$("profileSignedIn").querySelector(".small:not(#profileEmail)");
+    if(note) note.textContent="Signed in with Supabase. Your listings are shared online; favourites remain on this device.";
+    return;
+  }
+  localProfile=safeRead(PROFILE_KEY,null);
+  $("profileSignedOut").classList.remove("hidden");
+  $("profileSignedIn").classList.add("hidden");
+  $("headerAccount").textContent="Sign in";
+}
+window.editLocalProfile=function(){if(!localProfile)return;const name=prompt("Display name",localProfile.name);if(name&&name.trim()){localProfile.name=name.trim();localStorage.setItem(PROFILE_KEY,JSON.stringify(localProfile));renderProfile()}};
+window.logoutLocal=function(){if(confirm("Log out of this local demo profile?")){localStorage.removeItem(PROFILE_KEY);renderProfile();notify("Local profile signed out. This was not an online account.");showView("profile")}};
+$("photo").addEventListener("change",async e=>{hideNotice();selectedImage="";const f=e.target.files&&e.target.files[0];if(!f)return;if(f.size>12*1024*1024){e.target.value="";notify("Please choose an image smaller than 12 MB.",true);return}try{selectedImage=await compressImage(f);$("preview").src=selectedImage;$("preview").style.display="block"}catch(err){notify(err.message,true)}});
+$("listingForm").addEventListener("submit",e=>{e.preventDefault();hideNotice();if(!selectedImage)return notify("Please choose a product photo.",true);const phone=phoneNormalize($("phone").value);if(!phone)return notify("Enter a Kenyan mobile number: 07XXXXXXXX, 01XXXXXXXX, +2547XXXXXXXX or +2541XXXXXXXX.",true);const price=Number($("price").value);if(!Number.isFinite(price)||price<=0)return notify("Price must be greater than zero.",true);const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),title:$("title").value.trim(),category:$("category").value,price,condition:$("condition").value,description:$("description").value.trim(),seller:$("seller").value.trim(),phone,location:$("location").value.trim(),photo:selectedImage,sold:false,createdAt:new Date().toISOString()};if(!item.title||!item.description||!item.seller||!item.location||!item.category)return notify("Complete all required fields.",true);listings.unshift(item);if(!saveLocal()){listings.shift();return}if(localProfile&&localProfile.name!==item.seller){localProfile.name=item.seller;localStorage.setItem(PROFILE_KEY,JSON.stringify(localProfile))}$("listingForm").reset();selectedImage="";$("preview").removeAttribute("src");$("preview").style.display="none";renderListings();renderProfile();notify("Listing saved on this device. It is not yet shared with other students online.");showView("home")});
+$("search").addEventListener("input",renderListings);$("filter").addEventListener("change",renderListings);
+document.querySelectorAll(".bottomnav button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.view==="sell"){showView("sell");return}showView(b.dataset.view)}));
+$("headerAccount").addEventListener("click",()=>showView("profile"));
+$("authSwitch").addEventListener("click",e=>{e.preventDefault();showAuth(authMode==="signup"?"login":"signup")});
+$("forgotBtn").addEventListener("click",()=>showAuth("forgot"));
+$("authForm").addEventListener("submit",e=>{e.preventDefault();const n=$("authNotice");n.className="notice error";n.style.display="block";if(authMode==="forgot"){n.textContent="Password reset is not connected yet. Configure Supabase Auth to send a real reset email.";return}if(authMode==="signup"){const name=$("authName").value.trim(),email=$("authEmail").value.trim(),password=$("authPassword").value;if(!name||password.length<8){n.textContent="Enter your name and a password of at least 8 characters.";return}n.textContent="Online registration is not connected. This page cannot securely create a real account until Supabase Auth is configured.";return}n.textContent="Online login is not connected yet. No password was saved. Configure Supabase Auth to enable real accounts."});
+load();
+function load(){listings=safeRead(LIST_KEY,[]);if(!Array.isArray(listings))listings=[];savedIds=safeRead(SAVED_KEY,[]);if(!Array.isArray(savedIds))savedIds=[];renderListings();renderProfile()}
+})();
+</script>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const SUPABASE_URL = "https://lisddnqdgmqixjxnerzu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tF2ElKhr0IUh6LVDbEGJug_2OBIWhMH";
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $ = id => document.getElementById(id);
+let currentSession = null, authBusy = false, cloudReady = false;
+function authMessage(message,error=false){const el=$("authNotice");el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+function clearAuthMessage(){$("authNotice").textContent="";$ ("authNotice").style.display="none"}
+function setMode(mode){window.__egertonAuthMode=mode;$ ("authTitle").textContent=mode==="signup"?"Create your account":mode==="forgot"?"Reset password":"Sign in";$ ("authSubmit").textContent=mode==="signup"?"Create account":mode==="forgot"?"Send reset email":"Sign in";$ ("nameField").classList.toggle("hidden",mode!=="signup");$("authName").required=mode==="signup";$ ("authPassword").classList.toggle("hidden",mode==="forgot");$("authPassword").required=mode!=="forgot";$ ("confirmPasswordField").classList.toggle("hidden",mode!=="signup");$("authConfirmPassword").required=mode==="signup";if(mode!=="signup")$("authConfirmPassword").value="";$ ("forgotBtn").classList.toggle("hidden",mode!=="login");$ ("authSwitchText").classList.toggle("hidden",mode==="forgot");$ ("authSwitchText").innerHTML=mode==="signup"?'Already registered? <a href="#" id="authSwitch">Sign in</a>':'New here? <a href="#" id="authSwitch">Create an account</a>';clearAuthMessage()}
+function showSignedOut(message){currentSession=null;window.__egertonSession=null;["homeView","sellView","savedView","chatsView","profileView"].forEach(id=>$(id).classList.add("hidden"));$("authView").classList.remove("hidden");document.querySelector(".bottomnav").classList.add("hidden");$("headerAccount").classList.add("hidden");setMode("login");if(message)authMessage(message);window.scrollTo({top:0,behavior:"instant"})}
+function showSignedIn(session){currentSession=session;window.__egertonSession=session;$("authView").classList.add("hidden");document.querySelector(".bottomnav").classList.remove("hidden");$("headerAccount").classList.remove("hidden");$("profileSignedOut").classList.add("hidden");$("profileSignedIn").classList.remove("hidden");const email=session.user.email||"";const name=session.user.user_metadata?.full_name||email.split("@")[0]||"Student";$("profileName").textContent=name;$("profileEmail").textContent=email;$("avatar").textContent=(name.trim().charAt(0)||"U").toUpperCase();$("headerAccount").textContent="My profile";const note=$("profileSignedIn").querySelector(".small:not(#profileEmail)");if(note)note.textContent="Signed in with Supabase. Listings and photos are shared online; saved items remain on this device.";if(window.showView)window.showView("home");loadCloudListings()}
+function status(message,error=false){const el=$("cloudStatus");if(!el)return;el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+function mapRow(r){return {id:r.id,title:r.title,category:r.category,price:Number(r.price),condition:r.condition,description:r.description,seller:r.seller,phone:r.phone,location:r.location,photo:r.photo_url,sold:!!r.sold,createdAt:r.created_at,userId:r.user_id}}
+async function loadCloudListings(){status("Loading shared listings…");const {data,error}=await supabase.from("market_listings").select("*").order("created_at",{ascending:false});if(error){cloudReady=false;status("Shared listings are not configured yet. In Supabase, run the setup SQL file supplied with this update, then refresh. Details: "+error.message,true);window.__setCloudListings([]);return}cloudReady=true;window.__setCloudListings((data||[]).map(mapRow));status((data||[]).length?"Live marketplace: listings are shared across devices.":"No online listings yet. Be the first to publish one.")}
+function dataUrlToBlob(dataUrl){const [meta,encoded]=dataUrl.split(",");const mime=(meta.match(/data:(.*?);base64/)||[])[1]||"image/jpeg";const bin=atob(encoded);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new Blob([bytes],{type:mime})}
+async function publishListing(event){event.preventDefault();event.stopImmediatePropagation();const form=$("listingForm");const notice=$("notice");notice.style.display="none";if(!currentSession){status("Please sign in before publishing a listing.",true);showSignedOut();return}const phone=String($("phone").value||"").replace(/[^\d+]/g,"");let normalized=phone.startsWith("+")?phone.slice(1):phone;if(normalized.startsWith("0"))normalized="254"+normalized.slice(1);if(normalized.startsWith("7")||normalized.startsWith("1"))normalized="254"+normalized;if(!/^254[17]\d{8}$/.test(normalized)){notice.textContent="Enter a valid Kenyan mobile number.";notice.className="notice error";notice.style.display="block";return}const price=Number($("price").value);if(!Number.isFinite(price)||price<=0){notice.textContent="Price must be greater than zero.";notice.className="notice error";notice.style.display="block";return}const title=$("title").value.trim(),category=$("category").value,condition=$("condition").value,description=$("description").value.trim(),seller=$("seller").value.trim(),location=$("location").value.trim(),photoData=window.__getSelectedImage?window.__getSelectedImage():"";if(!title||!category||!description||!seller||!location||!photoData){notice.textContent="Complete every required field and choose a photo.";notice.className="notice error";notice.style.display="block";return}const button=$("submitBtn");button.disabled=true;button.textContent="Uploading photo and publishing…";try{const blob=dataUrlToBlob(photoData);if(blob.size>5*1024*1024)throw new Error("The compressed photo is still too large. Choose a smaller image.");const userId=currentSession.user.id;const imagePath=userId+"/"+crypto.randomUUID()+".jpg";const upload=await supabase.storage.from("listing-photos").upload(imagePath,blob,{contentType:"image/jpeg",upsert:false});if(upload.error)throw upload.error;const {data:publicUrl}=supabase.storage.from("listing-photos").getPublicUrl(imagePath);const row={user_id:userId,title,category,price,condition,description,seller,phone:normalized,location,photo_url:publicUrl.publicUrl,photo_path:imagePath,sold:false};const {data,error}=await supabase.from("market_listings").insert(row).select("*").single();if(error){await supabase.storage.from("listing-photos").remove([imagePath]);throw error}form.reset();const preview=$("preview");preview.removeAttribute("src");preview.style.display="none";if(window.__clearSelectedImage)window.__clearSelectedImage();window.__replaceOneCloudListing(mapRow(data));status("Published! Students can now see this listing from other devices.");window.showView("home")}catch(error){notice.textContent="Could not publish: "+(error.message||"Please check your Supabase setup and try again.");notice.className="notice error";notice.style.display="block"}finally{button.disabled=false;button.textContent="Publish listing"}}
+window.markCloudListingSold=async function(id){if(!currentSession){showSignedOut("Please sign in first.");return}if(!confirm("Mark this listing as sold?"))return;const {data,error}=await supabase.from("market_listings").update({sold:true}).eq("id",id).eq("user_id",currentSession.user.id).select("*").maybeSingle();if(error){status("Could not update listing: "+error.message,true);return}if(!data){status("You can only mark your own listings as sold.",true);return}await loadCloudListings()};
+$("listingForm").addEventListener("submit",publishListing,true);
+$("authSwitchText").addEventListener("click",event=>{if(event.target?.id==="authSwitch"){event.preventDefault();event.stopImmediatePropagation();setMode(window.__egertonAuthMode==="signup"?"login":"signup")}},true);
+$("authForm").addEventListener("submit",async event=>{event.preventDefault();event.stopImmediatePropagation();if(authBusy)return;authBusy=true;const button=$("authSubmit");button.disabled=true;try{const mode=window.__egertonAuthMode||"login",email=$("authEmail").value.trim(),password=$("authPassword").value;clearAuthMessage();if(mode==="signup"){const name=$("authName").value.trim();if(!name)throw Error("Enter your full name.");if(password.length<8)throw Error("Use at least 8 characters for your password.");if(password!==$("authConfirmPassword").value)throw Error("The passwords do not match.");const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin}});if(error)throw error;if(data.session)showSignedIn(data.session);else{setMode("login");authMessage("Account created. If email confirmation is enabled, check your inbox before signing in.")}}else if(mode==="forgot"){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});if(error)throw error;authMessage("If the account exists, a password reset email has been sent.")}else{const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;if(!data.session)throw Error("No session was created. Check whether your email needs confirmation.");showSignedIn(data.session)}}catch(error){authMessage(error.message||"Authentication failed.",true)}finally{authBusy=false;button.disabled=false;button.textContent=window.__egertonAuthMode==="signup"?"Create account":window.__egertonAuthMode==="forgot"?"Send reset email":"Sign in"}},true);
+$("forgotBtn").addEventListener("click",()=>setMode("forgot"));
+document.querySelectorAll("[data-toggle-password]").forEach(button=>button.addEventListener("click",()=>{const field=$(button.dataset.togglePassword),show=field.type==="password";field.type=show?"text":"password";button.textContent=show?"Hide":"Show"}));
+$("headerAccount").addEventListener("click",()=>{if(currentSession)window.showView("profile");else showSignedOut()},true);
+document.addEventListener("click",event=>{const nav=event.target.closest(".bottomnav button");if(!nav)return;if(!currentSession){event.preventDefault();event.stopImmediatePropagation();showSignedOut("Please sign in to use the marketplace.");return}if(nav.dataset.view==="sell"){$("seller").value=currentSession.user.user_metadata?.full_name||currentSession.user.email?.split("@")[0]||""}},true);
+window.logoutLocal=async function(){if(!confirm("Sign out of Egerton Market?"))return;const {error}=await supabase.auth.signOut();if(error){alert("Could not sign out: "+error.message);return}showSignedOut("You have signed out.")};
+supabase.auth.onAuthStateChange((event,session)=>{currentSession=session;window.__egertonSession=session;if(session){showSignedIn(session)}else if(event!=="INITIAL_SESSION"){showSignedOut()}});
+(async()=>{setMode("login");const {data,error}=await supabase.auth.getSession();if(error){showSignedOut("Could not check your session: "+error.message);return}if(data.session)showSignedIn(data.session);else showSignedOut()})();
+</script>
+
+</body>
+</html>
