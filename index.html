@@ -227,5 +227,187 @@ load();
 function load(){listings=safeRead(LIST_KEY,[]);if(!Array.isArray(listings))listings=[];savedIds=safeRead(SAVED_KEY,[]);if(!Array.isArray(savedIds))savedIds=[];renderListings();renderProfile()}
 })();
 </script>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://lisddnqdgmqixjxnerzu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tF2ElKhr0IUh6LVDbEGJug_2OBIWhMH";
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+const $ = id => document.getElementById(id);
+let currentSession = null;
+let authBusy = false;
+
+function authMessage(message, error = false) {
+  const el = $("authNotice");
+  el.textContent = message;
+  el.className = "notice" + (error ? " error" : "");
+  el.style.display = "block";
+}
+function clearAuthMessage() {
+  $("authNotice").textContent = "";
+  $("authNotice").style.display = "none";
+}
+function setBusy(busy) {
+  authBusy = busy;
+  $("authSubmit").disabled = busy;
+  $("authSubmit").textContent = busy ? "Please wait…" :
+    (window.__egertonAuthMode === "signup" ? "Create account" :
+    window.__egertonAuthMode === "forgot" ? "Send reset email" : "Sign in");
+}
+function setMode(mode) {
+  window.__egertonAuthMode = mode;
+  $("authTitle").textContent = mode === "signup" ? "Create your account" :
+    mode === "forgot" ? "Reset password" : "Sign in";
+  $("authSubmit").textContent = mode === "signup" ? "Create account" :
+    mode === "forgot" ? "Send reset email" : "Sign in";
+  $("nameField").classList.toggle("hidden", mode !== "signup");
+  $("authName").required = mode === "signup";
+  $("authPassword").classList.toggle("hidden", mode === "forgot");
+  $("authPassword").required = mode !== "forgot";
+  $("forgotBtn").classList.toggle("hidden", mode !== "login");
+  $("authSwitchText").classList.toggle("hidden", mode === "forgot");
+  $("authSwitchText").innerHTML = mode === "signup"
+    ? 'Already registered? <a href="#" id="authSwitch">Sign in</a>'
+    : 'New here? <a href="#" id="authSwitch">Create an account</a>';
+  clearAuthMessage();
+}
+function hideMarketplaceForSignedOut() {
+  ["homeView","sellView","savedView","chatsView","profileView"].forEach(id => $(id).classList.add("hidden"));
+  $("authView").classList.remove("hidden");
+  document.querySelector(".bottomnav").classList.add("hidden");
+  $("headerAccount").classList.add("hidden");
+  document.querySelectorAll("main > .intro").forEach(el => el.classList.add("hidden"));
+  $("authTitle").textContent = "Sign in";
+  setMode("login");
+  window.scrollTo({top:0,behavior:"instant"});
+}
+function showMarketplaceForSignedIn(session) {
+  currentSession = session;
+  $("authView").classList.add("hidden");
+  document.querySelector(".bottomnav").classList.remove("hidden");
+  $("headerAccount").classList.remove("hidden");
+  document.querySelectorAll("main > .intro").forEach(el => el.classList.remove("hidden"));
+  $("profileSignedOut").classList.add("hidden");
+  $("profileSignedIn").classList.remove("hidden");
+  const email = session.user.email || "";
+  const name = session.user.user_metadata?.full_name || email.split("@")[0] || "Student";
+  $("profileName").textContent = name;
+  $("profileEmail").textContent = email;
+  $("avatar").textContent = name.trim().charAt(0).toUpperCase() || "U";
+  $("headerAccount").textContent = "My profile";
+  if (typeof window.showView === "function") window.showView("home");
+  // Keep the profile view tied to the authenticated Supabase user, not local demo data.
+  $("profileSignedOut").classList.add("hidden");
+  $("profileSignedIn").classList.remove("hidden");
+  const localDemoNote = $("profileSignedIn").querySelector(".small");
+  if (localDemoNote) localDemoNote.textContent = "Signed in with Supabase. Listings and favourites are still device-local until shared database integration is completed.";
+  const editButton = $("profileSignedIn").querySelector('button[onclick="editLocalProfile()"]');
+  if (editButton) editButton.classList.add("hidden");
+  const statNote = $("profileSignedIn").querySelector(".statrow");
+  if (statNote) {
+    $("myCount").textContent = "—";
+    $("mySavedCount").textContent = "—";
+    $("mySoldCount").textContent = "—";
+  }
+}
+window.logoutLocal = async function() {
+  if (!confirm("Sign out of Egerton Market?")) return;
+  const { error } = await supabase.auth.signOut();
+  if (error) { alert("Could not sign out: " + error.message); return; }
+  currentSession = null;
+  hideMarketplaceForSignedOut();
+  authMessage("You have signed out.");
+};
+
+document.addEventListener("click", event => {
+  const nav = event.target.closest(".bottomnav button");
+  if (!nav) return;
+  if (!currentSession) {
+    event.preventDefault(); event.stopImmediatePropagation(); hideMarketplaceForSignedOut();
+  }
+}, true);
+
+$("headerAccount").addEventListener("click", event => {
+  if (!currentSession) { event.preventDefault(); event.stopImmediatePropagation(); hideMarketplaceForSignedOut(); }
+}, true);
+
+$("authSwitchText").addEventListener("click", event => {
+  if (event.target && event.target.id === "authSwitch") {
+    event.preventDefault(); event.stopImmediatePropagation();
+    setMode(window.__egertonAuthMode === "signup" ? "login" : "signup");
+  }
+}, true);
+
+$("forgotBtn").addEventListener("click", () => setMode("forgot"));
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (authBusy) return;
+  clearAuthMessage();
+  const mode = window.__egertonAuthMode || "login";
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+  setBusy(true);
+  try {
+    if (mode === "signup") {
+      const name = $("authName").value.trim();
+      if (!name) throw new Error("Please enter your full name.");
+      const { data, error } = await supabase.auth.signUp({
+        email, password,
+        options: { data: { full_name: name }, emailRedirectTo: window.location.origin }
+      });
+      if (error) throw error;
+      if (data.session) {
+        authMessage("Account created successfully.");
+        showMarketplaceForSignedIn(data.session);
+      } else {
+        authMessage("Account created. Check your email and click the verification link before signing in.");
+        setMode("login");
+      }
+    } else if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      });
+      if (error) throw error;
+      authMessage("If an account exists for that email, a password-reset email has been sent. Check your inbox.");
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (!data.session) throw new Error("Sign-in did not create a session. Check your email verification.");
+      showMarketplaceForSignedIn(data.session);
+    }
+  } catch (error) {
+    authMessage(error?.message || "Authentication failed. Please try again.", true);
+  } finally {
+    setBusy(false);
+  }
+}, true);
+
+supabase.auth.onAuthStateChange((event, session) => {
+  currentSession = session;
+  if (session) {
+    showMarketplaceForSignedIn(session);
+  } else {
+    hideMarketplaceForSignedOut();
+  }
+});
+
+(async () => {
+  setMode("login");
+  hideMarketplaceForSignedOut();
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    authMessage("Could not check your session: " + error.message, true);
+    return;
+  }
+  if (data.session) showMarketplaceForSignedIn(data.session);
+})();
+</script>
+
 </body>
 </html>
