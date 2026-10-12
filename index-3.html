@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#176b45">
+<title>Egerton Market & Comrade Chat</title>
+<style>
+:root{--green:#176b45;--green-dark:#105235;--light:#e9f5ed;--ink:#17251d;--muted:#65736a;--white:#fff;--border:#e0e8e2;--bg:#f4f7f4;--danger:#a32f22}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}
+button:hover{background:var(--green-dark)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:var(--light);color:var(--green)}.secondary:hover{background:#d7ebdd}
+.danger{background:#fff0ee;color:var(--danger)}
+header{background:var(--green);color:white;padding:16px}
+.wrap{max-width:1100px;margin:auto}
+.headerrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:23px;font-weight:800;letter-spacing:-.4px}
+.tagline{margin:5px 0 0;font-size:13px;color:#e1f3e6}
+.headeractions{display:flex;gap:8px;align-items:center}
+main{max-width:1100px;margin:auto;padding:16px 16px 100px}
+section{scroll-margin-top:14px}
+.intro,.panel,.toolbar{background:white;border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.intro{background:linear-gradient(135deg,#fff,#edf7ef)}
+h2{font-size:20px;margin:0 0 14px}h3{font-size:16px;margin:0 0 8px}
+.small{font-size:13px;color:var(--muted);line-height:1.5}
+label{display:block;font-size:13px;font-weight:700;margin:13px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #cbd8ce;border-radius:10px;background:white;color:var(--ink);min-width:0}
+textarea{min-height:90px;resize:vertical}
+.gridform{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.full{grid-column:1/-1}
+#preview{display:none;width:100%;max-height:240px;object-fit:contain;background:#f1f4f1;border-radius:10px;margin-top:10px}
+.toolbar{display:grid;grid-template-columns:1fr 190px;gap:10px}
+.listings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.product{background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.product img{width:100%;height:180px;object-fit:cover;background:#eaf0eb}
+.productbody{padding:13px;display:flex;flex-direction:column;flex:1}
+.price{font-size:21px;font-weight:800;color:var(--green);margin:8px 0}
+.tag{display:inline-block;width:max-content;max-width:100%;font-size:11px;background:var(--light);color:var(--green);padding:5px 8px;border-radius:20px;margin:0 5px 8px 0}
+.sold{background:#eee;color:#555}
+.product p{overflow-wrap:anywhere;line-height:1.45;margin:6px 0}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:12px}
+.actions button{flex:1;min-width:100px;font-size:12px;padding:10px 8px}
+.empty{padding:30px;text-align:center;background:white;border:1px dashed var(--border);border-radius:12px;color:var(--muted);grid-column:1/-1}
+.notice{display:none;background:#e9f5ed;color:#145d39;padding:12px;border-radius:10px;margin-bottom:12px;line-height:1.45}
+.notice.error{background:#fff0ee;color:#a32f22}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
+.hidden{display:none!important}
+.password-wrap{display:flex;gap:8px;align-items:stretch}
+.password-wrap input{flex:1;min-width:0}
+.password-toggle{flex:0 0 auto;background:var(--light);color:var(--green);padding:0 13px;border:1px solid #cbd8ce;border-radius:10px;font-size:13px}
+.pill{border-radius:999px;padding:6px 9px;background:#e9f5ed;color:#176b45;font-size:11px;font-weight:700}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 12px}
+.sectionhead h2{margin:0}
+.profilebox{display:flex;align-items:center;gap:14px}
+.avatar{width:60px;height:60px;border-radius:50%;background:var(--light);color:var(--green);display:grid;place-items:center;font-size:24px;font-weight:800;flex-shrink:0;object-fit:cover;border:2px solid #d5e8da}.photo-picker{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--border);border-radius:16px;background:#f8fbf8;margin:10px 0 16px}.photo-picker .avatar{width:92px;height:92px;font-size:30px}.photo-actions{display:flex;flex-direction:column;gap:7px}.photo-actions button{width:auto}.comrade-card .student-photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:#e9f5ed;margin-bottom:10px}.photo-hint{font-size:12px;color:var(--muted);margin:0}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat{background:#f5f8f5;border-radius:12px;padding:12px;text-align:center}
+.stat strong{display:block;font-size:20px;color:var(--green)}
+.stat span{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{flex:1;min-width:100px}
+.bottomnav{position:fixed;z-index:20;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:7px max(6px,env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom));box-shadow:0 -5px 20px #15271b0b}
+.bottomnav button{background:transparent;color:var(--muted);padding:7px 2px;border-radius:10px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:3px;flex-direction:column}
+.bottomnav button.active{background:var(--light);color:var(--green)}
+.bottomnav .navicon{font-size:19px;line-height:1}
+hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.authcard{max-width:520px;margin:0 auto}
+.chatlayout{display:grid;grid-template-columns:260px 1fr;gap:12px}
+.chatlist,.chatwindow{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+.chatlist{padding:12px}
+.chatitem{padding:12px;border-radius:10px;background:#f5f8f5;margin-top:8px;cursor:pointer}
+.chatwindow{padding:14px;min-height:220px}
+.chatbubble{background:#eef6f0;border-radius:12px;padding:10px;margin:8px 0;max-width:90%;overflow-wrap:anywhere}
+.chatbubble.mine{margin-left:auto;background:#176b45;color:white}
+.comrade-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;overflow-wrap:anywhere}.comrade-card p{margin:6px 0}.comrade-card button{margin-top:8px;width:100%}
+.job-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;overflow-wrap:anywhere}.job-card p{margin:7px 0}.photo-thumbnails{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;margin-top:8px}.photo-thumbnails img{width:76px;height:76px;object-fit:cover;border-radius:10px;cursor:zoom-in;border:1px solid var(--border)}
+@media(max-width:760px){.listings{grid-template-columns:repeat(2,minmax(0,1fr))}.product img{height:150px}.chatlayout{grid-template-columns:1fr}.headerrow{align-items:flex-start}.brand{font-size:21px}}
+@media(max-width:480px){main{padding:12px 12px 100px}.listings{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.product img{height:125px}.productbody{padding:10px}.price{font-size:17px}.product h3{font-size:14px}.actions button{min-width:0;font-size:11px;padding:9px 6px}.gridform,.toolbar{grid-template-columns:1fr}.full{grid-column:auto}.brand{font-size:19px}.tagline{max-width:220px}.headeractions button{font-size:11px;padding:9px}.intro,.panel,.toolbar{padding:14px}.statrow{gap:6px}.stat{padding:9px 4px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap headerrow">
+    <div><div class="brand">🌿 Egerton Market</div><p class="tagline">Buy. Sell. Connect. Right here on campus.</p></div>
+    <div class="headeractions"><button class="secondary" id="headerAccount" type="button">Sign in</button></div>
+  </div>
+</header>
+
+<main>
+  <section id="homeView">
+    <div class="intro">
+      <span class="pill">CAMPUS MARKETPLACE</span>
+      <h2 style="margin-top:12px">Find it. Buy it. Sell it.</h2>
+      <p>Discover electronics, books, clothes, hostel essentials, furniture and services around Egerton University.</p>
+      <p class="small">Browse listings shared by students. Sign in to publish an item with a photo stored online.</p>
+      <button type="button" onclick="document.getElementById('sellView').scrollIntoView({behavior:'smooth'})">＋ Sell an item</button>
+    </div>
+    <div id="cloudStatus" class="notice" role="status" aria-live="polite"></div><div class="sectionhead"><h2>🛍️ Items for sale</h2><span class="pill" id="listingCount">0 items</span></div>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search products, sellers or locations..." aria-label="Search listings">
+      <select id="filter" aria-label="Filter by category"><option value="">All categories</option><option>Electronics</option><option>Books & Notes</option><option>Clothing & Shoes</option><option>Furniture</option><option>Hostel Essentials</option><option>Beauty</option><option>Food</option><option>Services</option><option>Other</option></select>
+    </div>
+    <div id="listings" class="listings"><div class="empty">Loading marketplace…</div></div>
+  </section>
+
+  <section id="sellView" class="panel">
+    <h2>📸 List something for sale</h2>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <form id="listingForm">
+      <div class="gridform">
+        <div class="full"><label for="photo">Product photos (up to 4 angles) *</label><div class="photo-actions"><button id="galleryProduct" type="button" class="secondary">🖼️ Choose from gallery</button><button id="cameraProduct" type="button" class="secondary">📷 Take photo</button></div><input id="photo" type="file" accept="image/*,.jpg,.jpeg,.png,.webp" multiple hidden><input id="cameraProductFile" type="file" accept="image/*" capture="environment" hidden><div id="productPreviews" class="photo-actions"></div><img id="preview" alt="Product photo preview" style="display:none"><p class="small">Select up to four photos. Tap any photo preview to enlarge it.</p></div>
+        <div><label for="title">Product name *</label><input id="title" maxlength="80" placeholder="e.g. Used HP laptop" required></div>
+        <div><label for="category">Category *</label><select id="category" required><option value="">Choose category</option><option>Electronics</option><option>Books & Notes</option><option>Clothing & Shoes</option><option>Furniture</option><option>Hostel Essentials</option><option>Beauty</option><option>Food</option><option>Services</option><option>Other</option></select></div>
+        <div><label for="price">Price in KSh *</label><input id="price" type="number" min="1" max="100000000" step="1" placeholder="1500" required></div>
+        <div><label for="condition">Condition *</label><select id="condition" required><option>Secondhand - Good</option><option>Secondhand - Fair</option><option>Like New</option><option>Brand New</option></select></div>
+        <div class="full"><label for="description">Description *</label><textarea id="description" maxlength="1000" placeholder="Describe the item and collection arrangements." required></textarea></div>
+        <div><label for="seller">Your name *</label><input id="seller" maxlength="70" placeholder="Your name" required></div>
+        <div><label for="phone">Phone / WhatsApp number *</label><input id="phone" type="tel" maxlength="20" placeholder="07…, 01…, +2547… or +2541…" required></div>
+        <div class="full"><label for="location">Pickup location *</label><input id="location" maxlength="120" placeholder="e.g. Njoro campus, near the library" required></div>
+        <div class="full"><button id="submitBtn" type="submit">Publish listing</button><p class="small">Gallery tip: tap Choose File, then select Gallery/Photos or Files if your phone asks. Only share a phone number you are comfortable making public.</p></div>
+      </div>
+    </form>
+  </section>
+
+  <section id="jobsView" class="panel hidden">
+    <h2>💼 Campus jobs & opportunities</h2>
+    <p class="small">Employers can post opportunities. Students can create a job-seeker profile with their skills and the kind of work they want. Only share contact details you are comfortable sharing with signed-in users.</p>
+    <div id="jobsNotice" class="notice" role="status" aria-live="polite"></div>
+    <div class="tabs"><button type="button" class="secondary" id="showJobPost">Post a job</button><button type="button" class="secondary" id="showJobSeeker">Find work / add my details</button><button type="button" class="secondary" id="refreshJobs">Refresh</button></div>
+    <div id="jobPostPanel">
+      <h3>Post an opportunity</h3>
+      <form id="jobPostForm"><div class="gridform">
+        <div><label for="jobTitle">Job title *</label><input id="jobTitle" maxlength="120" placeholder="e.g. Part-time shop assistant" required></div>
+        <div><label for="jobCompany">Employer / business</label><input id="jobCompany" maxlength="120" placeholder="Business or employer name"></div>
+        <div><label for="jobType">Job type *</label><select id="jobType" required><option>Full-time</option><option>Part-time</option><option>Casual</option><option>Internship</option><option>Attachment</option><option>Remote</option><option>Volunteer</option></select></div>
+        <div><label for="jobLocation">Location *</label><input id="jobLocation" maxlength="120" placeholder="Campus, Njoro, remote..." required></div>
+        <div><label for="jobSalary">Pay / salary range</label><input id="jobSalary" maxlength="100" placeholder="e.g. KSh 500 per day / negotiable"></div>
+        <div class="full"><label for="jobDescription">Description and duties *</label><textarea id="jobDescription" maxlength="3000" required placeholder="Describe the work, hours and expectations"></textarea></div>
+        <div class="full"><label for="jobRequirements">Skills / requirements</label><textarea id="jobRequirements" maxlength="2000" placeholder="Experience, skills, qualifications"></textarea></div>
+        <div class="full"><label for="jobApplyInstructions">How applicants should apply *</label><textarea id="jobApplyInstructions" maxlength="1500" required placeholder="Include a safe application method, such as an email, business WhatsApp number, or instructions to apply in person"></textarea></div>
+        <div class="full"><button type="submit" id="publishJobBtn">Publish job</button></div>
+      </div></form>
+    </div>
+    <div id="jobSeekerPanel" class="hidden">
+      <h3>My job-seeker profile</h3>
+      <form id="jobSeekerForm"><div class="gridform">
+        <div><label for="seekerName">Full/display name *</label><input id="seekerName" maxlength="100" required></div>
+        <div><label for="seekerCourse">Course / qualification</label><input id="seekerCourse" maxlength="150" placeholder="Course, qualification or year"></div>
+        <div class="full"><label for="seekerSkills">Skills and experience *</label><textarea id="seekerSkills" maxlength="2000" required placeholder="Skills, past work, volunteer experience"></textarea></div>
+        <div><label for="seekerRole">Work sought *</label><input id="seekerRole" maxlength="150" required placeholder="e.g. cashier, tutor, designer"></div>
+        <div><label for="seekerType">Preferred work type</label><select id="seekerType"><option>Any</option><option>Part-time</option><option>Casual</option><option>Internship</option><option>Attachment</option><option>Full-time</option><option>Remote</option><option>Volunteer</option></select></div>
+        <div><label for="seekerLocation">Preferred location</label><input id="seekerLocation" maxlength="120" placeholder="Campus, Njoro, remote"></div>
+        <div><label for="seekerAvailability">Availability</label><input id="seekerAvailability" maxlength="120" placeholder="e.g. evenings and weekends"></div>
+        <div><label for="seekerPhone">Phone / WhatsApp (optional)</label><input id="seekerPhone" type="tel" maxlength="25" placeholder="Only if comfortable sharing"></div>
+        <div><label for="seekerEmail">Contact email (optional)</label><input id="seekerEmail" type="email" maxlength="150" placeholder="Email for employers"></div>
+        <div class="full"><label for="seekerBio">Short introduction</label><textarea id="seekerBio" maxlength="1000" placeholder="A short note for potential employers"></textarea></div>
+        <div class="full"><label><input id="seekerAvailable" type="checkbox" checked style="width:auto"> Show my profile to signed-in users</label><button type="submit" id="saveSeekerBtn">Save job-seeker profile</button></div>
+      </div></form>
+    </div>
+    <hr><div class="sectionhead"><h2>📌 Available jobs</h2></div><div id="jobListings" class="listings"><div class="empty">Loading jobs…</div></div>
+    <hr><div class="sectionhead"><h2>🎓 Students looking for work</h2></div><div id="jobSeekers" class="listings"><div class="empty">Loading job-seeker profiles…</div></div>
+  </section>
+
+  <section id="savedView" class="hidden">
+    <div class="sectionhead"><h2>♥ Saved items</h2></div>
+    <p class="small">Your saved items are currently stored on this device.</p>
+    <div id="savedListings" class="listings"></div>
+  </section>
+
+  <section id="chatsView" class="panel hidden">
+    <h2>🤝 Comrade Chat</h2>
+    <p class="small">Meet Egerton students for friendship, study partners, and optional dating. Dating is for adults 18+. Your phone number is not shown on your Comrade profile.</p>
+    <div id="comradeNotice" class="notice" role="status"></div>
+    <h3>Your Comrade profile</h3>
+    <form id="comradeProfileForm"><div class="photo-picker">
+      <img id="comradePhotoPreview" class="avatar" alt="Your profile picture" src="" style="display:none">
+      <div id="comradePhotoInitial" class="avatar" aria-hidden="true">👤</div>
+      <div class="photo-actions"><strong>Your profile photo</strong><button id="chooseComradePhoto" class="secondary" type="button">🖼️ Choose from gallery</button><button id="takeComradePhoto" class="secondary" type="button">🤳 Take photo</button><button id="removeComradePhoto" class="secondary" type="button">Remove photo</button><p class="photo-hint">Choose a photo from your gallery or take one with your camera.</p></div>
+      <input id="comradePhotoFile" type="file" accept="image/*" hidden><input id="comradeCameraFile" type="file" accept="image/*" capture="user" hidden>
+    </div><div class="gridform">
+      <div><label for="comradeName">Display name *</label><input id="comradeName" maxlength="60" required></div>
+      <div><label for="comradeAge">Age (18+)</label><input id="comradeAge" type="number" min="18" max="120" placeholder="18 or older"></div>
+      <div><label for="comradeCourse">Course</label><input id="comradeCourse" maxlength="120" placeholder="e.g. Computer Science"></div>
+      <div><label for="comradeCounty">Home county</label><input id="comradeCounty" maxlength="100" placeholder="e.g. Nakuru"></div>
+      <div><label for="comradeGoal">Looking for</label><select id="comradeGoal"><option value="friendship">Friendship</option><option value="study_partner">Study partner</option><option value="dating">Dating (18+ only)</option><option value="all">Open to all</option></select></div>
+      <div><label for="comradeCampus">Campus</label><input id="comradeCampus" maxlength="120" value="Egerton University"></div><div><label for="comradeReligion">Religion (optional)</label><select id="comradeReligion"><option value="Prefer not to say">Prefer not to say</option><option>Muslim</option><option>Catholic</option><option>Christian Union</option><option>SDA</option><option>Hindu</option></select></div>
+      <div class="full"><label for="comradeBio">About you</label><textarea id="comradeBio" maxlength="500" placeholder="Interests, hobbies, what you enjoy..."></textarea></div>
+      <div class="full"><label><input id="comradeVisible" type="checkbox" checked style="width:auto"> Show my profile to signed-in students</label><button id="saveComradeProfile" type="submit">Save Comrade profile</button></div>
+    </div></form>
+    <hr><div class="sectionhead"><h2>🌱 Discover students</h2><button id="refreshComrades" class="secondary" type="button">Refresh</button></div>
+    <div id="comradeProfiles" class="listings"><div class="empty">Loading profiles…</div></div>
+    <hr><h3>Private messages</h3><div id="comradeInbox" class="chatlayout"><div class="chatlist"><p class="small">Your private conversations will appear here once a chat has been unlocked.</p></div><div class="chatwindow"><p class="small">Starting a new chat costs KSh 25. Payment verification through a secure M-Pesa server still needs to be connected. Do not send money to anyone manually based on this page.</p></div></div>
+  </section>
+
+  <section id="profileView" class="panel hidden">
+    <h2>👤 Your profile</h2>
+    <div id="profileSignedOut">
+      <p>Sign in or create an account to manage your marketplace identity.</p>
+      <button type="button" onclick="showAuth('signup')">Create account</button>
+      <button class="secondary" type="button" onclick="showAuth('login')">Sign in</button>
+      <p class="small">Sign in to access your marketplace profile.</p>
+    </div>
+    <div id="profileSignedIn" class="hidden">
+      <div class="profilebox"><div class="avatar" id="avatar" aria-label="Your profile picture">U</div><div><h3 id="profileName">Marketplace user</h3><p class="small" id="profileEmail"></p></div></div>
+      <div class="statrow"><div class="stat"><strong id="myCount">0</strong><span>My listings</span></div><div class="stat"><strong id="mySavedCount">0</strong><span>Saved</span></div><div class="stat"><strong id="mySoldCount">0</strong><span>Sold</span></div></div>
+      <button class="secondary hidden" type="button" onclick="editLocalProfile()">Edit local profile</button>
+      <button class="danger" type="button" onclick="logoutLocal()">Sign out</button>
+      <p class="small">Signed in with Supabase. Your listings are shared online; favourites remain on this device.</p>
+    </div>
+    <hr>
+    <h3>Marketplace safety</h3><p class="small">Check items before paying, meet in a safe public place, and never share passwords or payment PINs with a buyer or seller.</p>
+  </section>
+
+  <section id="authView" class="panel authcard hidden">
+    <div class="sectionhead"><h2 id="authTitle">Sign in</h2><button type="button" class="secondary" onclick="showView('profile')">Close</button></div>
+    <div id="authNotice" class="notice" role="status"></div>
+    <form id="authForm">
+      <div id="nameField" class="hidden"><label for="authName">Full name</label><input id="authName" maxlength="70" autocomplete="name" placeholder="Your name"></div>
+      <label for="authEmail">Email address</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+      <label for="authPassword">Password</label>
+      <div class="password-wrap"><input id="authPassword" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" required><button type="button" class="password-toggle" data-toggle-password="authPassword" aria-label="Show password" aria-pressed="false">Show</button></div>
+      <div id="confirmPasswordField" class="hidden"><label for="authConfirmPassword">Confirm password</label><div class="password-wrap"><input id="authConfirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="Enter the same password again"><button type="button" class="password-toggle" data-toggle-password="authConfirmPassword" aria-label="Show confirmation password" aria-pressed="false">Show</button></div></div>
+      <div class="actions"><button type="submit" id="authSubmit">Sign in</button><button type="button" class="secondary" id="forgotBtn">Forgot password?</button></div>
+    </form>
+    <p class="small" id="authSwitchText">New here? <a href="#" id="authSwitch">Create an account</a></p>
+  </section>
+
+  <section class="intro" style="margin-top:20px">
+    <h2>🤝 Buy and sell safely</h2>
+    <p>1. Post a clear photo and accurate description.</p><p>2. Contact the seller and ask questions.</p><p>3. Agree on a price and meet in a safe public place.</p><p>4. Verify the item before completing payment.</p>
+  </section>
+</main>
+
+<footer>Egerton Market · Built for campus connections<br>Always verify items and meet in a safe public place.</footer>
+
+<nav class="bottomnav" aria-label="Main navigation">
+  <button class="active" data-view="home"><span class="navicon">⌂</span>Home</button>
+  <button data-view="saved"><span class="navicon">♡</span>Saved</button>
+  <button data-view="sell"><span class="navicon">＋</span>Sell</button>
+  <button data-view="chats"><span class="navicon">▤</span>Chats</button>
+  <button data-view="jobs"><span class="navicon">💼</span>Jobs</button>
+  <button data-view="profile"><span class="navicon">◉</span>Profile</button>
+</nav>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const LIST_KEY="egerton_market_listings_v1";
+const SAVED_KEY="egerton_market_saved_v1";
+const PROFILE_KEY="egerton_market_local_profile_v1";
+let listings=[],savedIds=[],selectedImage="",selectedImages=[],authMode="login";
+let localProfile=null;
+
+function safeRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||"null");return v==null?fallback:v}catch(e){return fallback}}
+function notify(message,error=false){const el=$("notice");el.textContent=message;el.classList.toggle("error",error);el.style.display="block"}
+function hideNotice(){$("notice").style.display="none"}
+function phoneNormalize(phone){let n=String(phone||"").replace(/[^\d+]/g,"");if(n.startsWith("+"))n=n.slice(1);if(n.startsWith("0"))n="254"+n.slice(1);if(n.startsWith("7")||n.startsWith("1"))n="254"+n;return /^254[17]\d{8}$/.test(n)?n:""}
+function compressImage(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith("image/"))return reject(Error("Please choose a JPG, PNG, WEBP or other supported image from your gallery."));const reader=new FileReader();reader.onerror=()=>reject(Error("Could not read that image."));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(Error("Could not open that image."));img.onload=()=>{const scale=Math.min(1,1000/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.7))};img.src=reader.result};reader.readAsDataURL(file)})}
+function saveLocal(){try{localStorage.setItem(LIST_KEY,JSON.stringify(listings));return true}catch(e){notify("Device storage is full. Remove older listings or use smaller photos.",true);return false}}
+window.compressImage=compressImage;
+window.__getSelectedImage=()=>selectedImages[0]||selectedImage;window.__getSelectedImages=()=>selectedImages.slice();window.__clearSelectedImage=()=>{selectedImage="";selectedImages=[];renderProductPreviews()};
+function textEl(tag,text,cls){const e=document.createElement(tag);e.textContent=text==null?"":String(text);if(cls)e.className=cls;return e}
+function showView(view){const views={home:"homeView",sell:"sellView",saved:"savedView",chats:"chatsView",jobs:"jobsView",profile:"profileView",auth:"authView"};Object.values(views).forEach(id=>$(id).classList.add("hidden"));$(views[view]||views.home).classList.remove("hidden");document.querySelectorAll(".bottomnav button").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="saved")renderSaved();if(view==="profile")renderProfile();if(view==="home")renderListings();window.scrollTo({top:0,behavior:"smooth"})}
+window.showView=showView;
+function showAuth(mode){authMode=mode;$("authTitle").textContent=mode==="signup"?"Create your account":mode==="forgot"?"Reset password":"Sign in";$("authSubmit").textContent=mode==="signup"?"Create account":mode==="forgot"?"Show reset instructions":"Sign in";$("nameField").classList.toggle("hidden",mode!=="signup");$("authPassword").classList.toggle("hidden",mode==="forgot");$("forgotBtn").classList.toggle("hidden",mode!=="login");$("authSwitchText").classList.toggle("hidden",mode==="forgot");$("authNotice").style.display="none";showView("auth")}
+window.showAuth=showAuth;
+function renderCard(item){const card=document.createElement("article");card.className="product";const img=document.createElement("img");img.src=item.photo;img.alt=item.title;img.loading="lazy";img.style.cursor="zoom-in";img.onclick=()=>openPhoto(item.photo);card.appendChild(img);if(item.photos&&item.photos.length>1){const strip=document.createElement("div");strip.className="photo-actions";strip.style.flexDirection="row";item.photos.slice(0,4).forEach(src=>{const thumb=document.createElement("img");thumb.src=src;thumb.alt=item.title+" photo";thumb.style.cssText="width:48px;height:48px;object-fit:cover;border-radius:8px;cursor:zoom-in";thumb.onclick=()=>openPhoto(src);strip.appendChild(thumb)});card.appendChild(strip)}const body=document.createElement("div");body.className="productbody";body.appendChild(textEl("span",item.category,"tag"));if(item.sold)body.appendChild(textEl("span","SOLD","tag sold"));body.appendChild(textEl("h3",item.title));body.appendChild(textEl("div","KSh "+Number(item.price).toLocaleString("en-KE"),"price"));body.appendChild(textEl("p",item.condition,"small"));body.appendChild(textEl("p",item.description));body.appendChild(textEl("p","📍 "+item.location,"small"));body.appendChild(textEl("p","Seller: "+item.seller,"small"));
+const actions=document.createElement("div");actions.className="actions";const phone=phoneNormalize(item.phone);const contact=document.createElement("button");contact.textContent="WhatsApp";contact.disabled=item.sold||!phone;contact.onclick=()=>{const msg="Hi "+item.seller+", I'm interested in your "+item.title+" listed on Egerton Market for KSh "+item.price+". Is it available?";window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener,noreferrer")};actions.appendChild(contact);
+const fav=document.createElement("button");fav.className="secondary";fav.textContent=savedIds.includes(item.id)?"♥ Saved":"♡ Save";fav.onclick=()=>toggleSaved(item.id);actions.appendChild(fav);
+const ownsItem=!!(window.__egertonSession&&item.userId===window.__egertonSession.user.id);if(ownsItem){const sold=document.createElement("button");sold.className="secondary";const withinUndo=item.sold&&item.soldAt&&Date.now()-Date.parse(item.soldAt)<6*60*60*1000;sold.textContent=!item.sold?"Mark sold":(withinUndo?"Undo sold (6h)":"Sold · locked");sold.disabled=item.sold&&!withinUndo;sold.onclick=()=>{if(!item.sold&&window.markCloudListingSold)window.markCloudListingSold(item.id);else if(withinUndo&&window.undoCloudListingSold)window.undoCloudListingSold(item.id)};actions.appendChild(sold)}body.appendChild(actions);card.appendChild(body);return card}
+function renderInto(area,items,emptyText){area.replaceChildren();if(!items.length){area.appendChild(textEl("div",emptyText,"empty"));return}items.forEach(item=>area.appendChild(renderCard(item)))}
+function renderListings(){const q=$("search").value.trim().toLowerCase(),cat=$("filter").value;const visible=listings.filter(i=>!(i.sold&&(!i.soldAt||Date.now()-Date.parse(i.soldAt)>=6*60*60*1000))&&[i.title,i.category,i.description,i.seller,i.location].join(" ").toLowerCase().includes(q)&&(!cat||i.category===cat));$("listingCount").textContent=listings.length+" item"+(listings.length===1?"":"s");renderInto($("listings"),visible,listings.length?"No matching items. Try another search.":"No listings yet. Be the first to sell something!")}
+window.__setCloudListings=function(items){listings=Array.isArray(items)?items:[];renderListings();renderSaved();renderProfile()};
+window.__replaceOneCloudListing=function(item){const i=listings.findIndex(x=>x.id===item.id);if(i>=0)listings[i]=item;else listings.unshift(item);renderListings();renderSaved();renderProfile()};
+function renderSaved(){renderInto($("savedListings"),listings.filter(i=>savedIds.includes(i.id)),"No saved items yet. Tap ♡ Save on a product to keep it here.")}
+function toggleSaved(id){savedIds=savedIds.includes(id)?savedIds.filter(x=>x!==id):[...savedIds,id];try{localStorage.setItem(SAVED_KEY,JSON.stringify(savedIds))}catch(e){}renderListings();renderSaved();renderProfile()}
+function renderProfile(){
+  // Supabase session is the source of truth for online authentication.
+  const session=window.__egertonSession||null;
+  if(session&&session.user){
+    const email=session.user.email||"";
+    const name=session.user.user_metadata?.full_name||email.split("@")[0]||"Student";
+    $("profileSignedOut").classList.add("hidden");
+    $("profileSignedIn").classList.remove("hidden");
+    $("headerAccount").textContent="My profile";
+    $("profileName").textContent=name;
+    $("profileEmail").textContent=email;
+    $("avatar").textContent=(name.trim().charAt(0)||"U").toUpperCase();
+    $("myCount").textContent=listings.filter(i=>i.seller===name).length;
+    $("mySavedCount").textContent=savedIds.length;
+    $("mySoldCount").textContent=listings.filter(i=>i.seller===name&&i.sold).length;
+    const edit=$("profileSignedIn").querySelector('button[onclick="editLocalProfile()"]');
+    if(edit) edit.classList.add("hidden");
+    const note=$("profileSignedIn").querySelector(".small:not(#profileEmail)");
+    if(note) note.textContent="Signed in with Supabase. Your listings are shared online; favourites remain on this device.";
+    return;
+  }
+  localProfile=safeRead(PROFILE_KEY,null);
+  $("profileSignedOut").classList.remove("hidden");
+  $("profileSignedIn").classList.add("hidden");
+  $("headerAccount").textContent="Sign in";
+}
+window.editLocalProfile=function(){if(!localProfile)return;const name=prompt("Display name",localProfile.name);if(name&&name.trim()){localProfile.name=name.trim();localStorage.setItem(PROFILE_KEY,JSON.stringify(localProfile));renderProfile()}};
+window.logoutLocal=function(){if(confirm("Log out of this local demo profile?")){localStorage.removeItem(PROFILE_KEY);renderProfile();notify("Local profile signed out. This was not an online account.");showView("profile")}};
+function renderProductPreviews(){const box=$("productPreviews");box.replaceChildren();box.classList.add("photo-thumbnails");selectedImages.forEach((src,i)=>{const wrap=document.createElement("div");wrap.style.cssText="position:relative;display:inline-block";const im=document.createElement("img");im.src=src;im.alt="Product photo angle "+(i+1);im.onclick=()=>openPhoto(src);wrap.appendChild(im);const cap=document.createElement("small");cap.textContent="Angle "+(i+1);cap.style.cssText="display:block;text-align:center;color:var(--muted);font-size:11px";wrap.appendChild(cap);const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","Remove photo angle "+(i+1));remove.style.cssText="position:absolute;right:2px;top:2px;padding:3px 7px;border-radius:50%;background:#a32f22";remove.onclick=()=>{selectedImages.splice(i,1);renderProductPreviews()};wrap.appendChild(remove);box.appendChild(wrap)});selectedImage=selectedImages[0]||""}
+function openPhoto(src){const w=window.open("","_blank");if(w){w.document.write('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Photo</title><body style="margin:0;background:#111;display:grid;place-items:center;min-height:100vh"><img src="'+src+'" style="max-width:100%;max-height:100vh;object-fit:contain"></body>');w.document.close()}else{const a=document.createElement("a");a.href=src;a.target="_blank";a.rel="noopener";a.click()}}
+async function addProductFiles(files){for(const f of Array.from(files||[])){if(selectedImages.length>=4){notify("You can add up to four photos.",true);break}if(!f.type.startsWith("image/")){notify("Choose image files only.",true);continue}if(f.size>12*1024*1024){notify("Each photo must be smaller than 12 MB.",true);continue}try{selectedImages.push(await compressImage(f))}catch(err){notify(err.message,true)}}renderProductPreviews()}
+$("photo").addEventListener("change",async e=>{await addProductFiles(e.target.files);e.target.value=""});$("galleryProduct").addEventListener("click",()=>$("photo").click());$("cameraProduct").addEventListener("click",()=>$("cameraProductFile").click());$("cameraProductFile").addEventListener("change",async e=>{await addProductFiles(e.target.files);e.target.value=""});
+$("listingForm").addEventListener("submit",e=>{e.preventDefault();hideNotice();if(!selectedImages.length&&!selectedImage)return notify("Please choose at least one product photo.",true);const phone=phoneNormalize($("phone").value);if(!phone)return notify("Enter a Kenyan mobile number: 07XXXXXXXX, 01XXXXXXXX, +2547XXXXXXXX or +2541XXXXXXXX.",true);const price=Number($("price").value);if(!Number.isFinite(price)||price<=0)return notify("Price must be greater than zero.",true);const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),title:$("title").value.trim(),category:$("category").value,price,condition:$("condition").value,description:$("description").value.trim(),seller:$("seller").value.trim(),phone,location:$("location").value.trim(),photo:selectedImage,photos:selectedImages.slice(),sold:false,createdAt:new Date().toISOString()};if(!item.title||!item.description||!item.seller||!item.location||!item.category)return notify("Complete all required fields.",true);listings.unshift(item);if(!saveLocal()){listings.shift();return}if(localProfile&&localProfile.name!==item.seller){localProfile.name=item.seller;localStorage.setItem(PROFILE_KEY,JSON.stringify(localProfile))}$("listingForm").reset();selectedImage="";selectedImages=[];renderProductPreviews();$("preview").removeAttribute("src");$("preview").style.display="none";renderListings();renderProfile();notify("Listing saved on this device. It is not yet shared with other students online.");showView("home")});
+$("search").addEventListener("input",renderListings);$("filter").addEventListener("change",renderListings);
+document.querySelectorAll(".bottomnav button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.view==="sell"){window.showView("sell");return}window.showView(b.dataset.view)}));
+$("headerAccount").addEventListener("click",()=>showView("profile"));
+$("authSwitch").addEventListener("click",e=>{e.preventDefault();showAuth(authMode==="signup"?"login":"signup")});
+$("forgotBtn").addEventListener("click",()=>showAuth("forgot"));
+$("authForm").addEventListener("submit",e=>{e.preventDefault();const n=$("authNotice");n.className="notice error";n.style.display="block";if(authMode==="forgot"){n.textContent="Password reset is not connected yet. Configure Supabase Auth to send a real reset email.";return}if(authMode==="signup"){const name=$("authName").value.trim(),email=$("authEmail").value.trim(),password=$("authPassword").value;if(!name||password.length<8){n.textContent="Enter your name and a password of at least 8 characters.";return}n.textContent="Online registration is not connected. This page cannot securely create a real account until Supabase Auth is configured.";return}n.textContent="Online login is not connected yet. No password was saved. Configure Supabase Auth to enable real accounts."});
+load();
+function load(){listings=safeRead(LIST_KEY,[]);if(!Array.isArray(listings))listings=[];savedIds=safeRead(SAVED_KEY,[]);if(!Array.isArray(savedIds))savedIds=[];renderListings();renderProfile()}
+})();
+</script>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const SUPABASE_URL = "https://lisddnqdgmqixjxnerzu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tF2ElKhr0IUh6LVDbEGJug_2OBIWhMH";
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $ = id => document.getElementById(id);
+let currentSession = null, authBusy = false, cloudReady = false;
+function authMessage(message,error=false){const el=$("authNotice");el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+function clearAuthMessage(){$("authNotice").textContent="";$ ("authNotice").style.display="none"}
+function setMode(mode){window.__egertonAuthMode=mode;$ ("authTitle").textContent=mode==="signup"?"Create your account":mode==="forgot"?"Reset password":"Sign in";$ ("authSubmit").textContent=mode==="signup"?"Create account":mode==="forgot"?"Send reset email":"Sign in";$ ("nameField").classList.toggle("hidden",mode!=="signup");$("authName").required=mode==="signup";$ ("authPassword").classList.toggle("hidden",mode==="forgot");$("authPassword").required=mode!=="forgot";$ ("confirmPasswordField").classList.toggle("hidden",mode!=="signup");$("authConfirmPassword").required=mode==="signup";if(mode!=="signup")$("authConfirmPassword").value="";$ ("forgotBtn").classList.toggle("hidden",mode!=="login");$ ("authSwitchText").classList.toggle("hidden",mode==="forgot");$ ("authSwitchText").innerHTML=mode==="signup"?'Already registered? <a href="#" id="authSwitch">Sign in</a>':'New here? <a href="#" id="authSwitch">Create an account</a>';clearAuthMessage()}
+function showSignedOut(message){currentSession=null;window.__egertonSession=null;["homeView","sellView","savedView","chatsView","jobsView","profileView"].forEach(id=>$(id).classList.add("hidden"));$("authView").classList.remove("hidden");document.querySelector(".bottomnav").classList.add("hidden");$("headerAccount").classList.add("hidden");setMode("login");if(message)authMessage(message);window.scrollTo({top:0,behavior:"instant"})}
+function showSignedIn(session){currentSession=session;window.__egertonSession=session;$("authView").classList.add("hidden");document.querySelector(".bottomnav").classList.remove("hidden");$("headerAccount").classList.remove("hidden");$("profileSignedOut").classList.add("hidden");$("profileSignedIn").classList.remove("hidden");const email=session.user.email||"";const name=session.user.user_metadata?.full_name||email.split("@")[0]||"Student";$("profileName").textContent=name;$("profileEmail").textContent=email;$("avatar").textContent=(name.trim().charAt(0)||"U").toUpperCase();$("headerAccount").textContent="My profile";const note=$("profileSignedIn").querySelector(".small:not(#profileEmail)");if(note)note.textContent="Signed in with Supabase. Listings and photos are shared online; saved items remain on this device.";if(window.showView)window.showView("home");loadCloudListings()}
+function status(message,error=false){const el=$("cloudStatus");if(!el)return;el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+function mapRow(r){return {id:r.id,title:r.title,category:r.category,price:Number(r.price),condition:r.condition,description:r.description,seller:r.seller,phone:r.phone,location:r.location,photo:r.photo_url,photos:Array.isArray(r.photo_urls)&&r.photo_urls.length?r.photo_urls:[r.photo_url],sold:!!r.sold,soldAt:r.sold_at||null,createdAt:r.created_at,userId:r.user_id}}
+async function loadCloudListings(){status("Loading shared listings…");const {data,error}=await supabase.from("market_listings").select("*").order("created_at",{ascending:false});if(error){cloudReady=false;status("Shared listings are not configured yet. In Supabase, run the setup SQL file supplied with this update, then refresh. Details: "+error.message,true);window.__setCloudListings([]);return}cloudReady=true;window.__setCloudListings((data||[]).map(mapRow));status((data||[]).length?"Live marketplace: listings are shared across devices.":"No online listings yet. Be the first to publish one.")}
+function dataUrlToBlob(dataUrl){const [meta,encoded]=dataUrl.split(",");const mime=(meta.match(/data:(.*?);base64/)||[])[1]||"image/jpeg";const bin=atob(encoded);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new Blob([bytes],{type:mime})}
+async function publishListing(event){event.preventDefault();event.stopImmediatePropagation();const form=$("listingForm");const notice=$("notice");notice.style.display="none";if(!currentSession){status("Please sign in before publishing a listing.",true);showSignedOut();return}const phone=String($("phone").value||"").replace(/[^\d+]/g,"");let normalized=phone.startsWith("+")?phone.slice(1):phone;if(normalized.startsWith("0"))normalized="254"+normalized.slice(1);if(normalized.startsWith("7")||normalized.startsWith("1"))normalized="254"+normalized;if(!/^254[17]\d{8}$/.test(normalized)){notice.textContent="Enter a valid Kenyan mobile number.";notice.className="notice error";notice.style.display="block";return}const price=Number($("price").value);if(!Number.isFinite(price)||price<=0){notice.textContent="Price must be greater than zero.";notice.className="notice error";notice.style.display="block";return}const title=$("title").value.trim(),category=$("category").value,condition=$("condition").value,description=$("description").value.trim(),seller=$("seller").value.trim(),location=$("location").value.trim(),photoData=window.__getSelectedImage?window.__getSelectedImage():"";if(!title||!category||!description||!seller||!location||!photoData){notice.textContent="Complete every required field and choose a photo.";notice.className="notice error";notice.style.display="block";return}const button=$("submitBtn");button.disabled=true;button.textContent="Uploading photo and publishing…";try{const userId=currentSession.user.id;const currentImages=window.__getSelectedImages?window.__getSelectedImages():[];const imageData=(currentImages.length?currentImages:[photoData]).slice(0,4);const uploadedPaths=[],photoUrls=[];for(const data of imageData){const blob=dataUrlToBlob(data);if(blob.size>5*1024*1024)throw new Error("A compressed photo is still too large. Choose a smaller image.");const imagePath=userId+"/"+crypto.randomUUID()+".jpg";const upload=await supabase.storage.from("listing-photos").upload(imagePath,blob,{contentType:"image/jpeg",upsert:false});if(upload.error)throw upload.error;uploadedPaths.push(imagePath);photoUrls.push(supabase.storage.from("listing-photos").getPublicUrl(imagePath).data.publicUrl)}const row={user_id:userId,title,category,price,condition,description,seller,phone:normalized,location,photo_url:photoUrls[0],photo_path:uploadedPaths[0],photo_urls:photoUrls,sold:false};const {data,error}=await supabase.from("market_listings").insert(row).select("*").single();if(error){await supabase.storage.from("listing-photos").remove(uploadedPaths||[]);throw error}form.reset();const preview=$("preview");preview.removeAttribute("src");preview.style.display="none";if(window.__clearSelectedImage)window.__clearSelectedImage();window.__replaceOneCloudListing(mapRow(data));status("Published! Students can now see this listing from other devices.");window.showView("home")}catch(error){notice.textContent="Could not publish: "+(error.message||"Please check your Supabase setup and try again.");notice.className="notice error";notice.style.display="block"}finally{button.disabled=false;button.textContent="Publish listing"}}
+window.markCloudListingSold=async function(id){if(!currentSession){showSignedOut("Please sign in first.");return}if(!confirm("Mark this listing as sold?"))return;const {data,error}=await supabase.from("market_listings").update({sold:true,sold_at:new Date().toISOString()}).eq("id",id).eq("user_id",currentSession.user.id).select("*").maybeSingle();if(error){status("Could not update listing: "+error.message,true);return}if(!data){status("You can only mark your own listings as sold.",true);return}await loadCloudListings()};
+window.undoCloudListingSold=async function(id){if(!currentSession)return;const {data:found,error:readError}=await supabase.from("market_listings").select("sold_at").eq("id",id).eq("user_id",currentSession.user.id).maybeSingle();if(readError){status("Could not check sold time: "+readError.message,true);return}if(!found||!found.sold_at||Date.now()-Date.parse(found.sold_at)>=6*60*60*1000){status("The six-hour undo period has ended.",true);await loadCloudListings();return}const {error}=await supabase.from("market_listings").update({sold:false,sold_at:null}).eq("id",id).eq("user_id",currentSession.user.id);if(error){status("Could not undo sold status: "+error.message,true);return}status("Sold status undone.");await loadCloudListings()};
+
+function jobsNotice(message,error=false){const el=$("jobsNotice");el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+function normalizeJobRow(r){return {id:r.id,title:r.job_title,company:r.company_name||"Employer",type:r.job_type||"Job",location:r.location||"Not specified",salary:r.salary_range||"Not specified",description:r.description||"",requirements:r.requirements||"",instructions:r.application_instructions||"",createdAt:r.created_at,employerId:r.employer_id}}
+function renderJobs(rows){const box=$("jobListings");box.replaceChildren();if(!rows.length){box.innerHTML="<div class='empty'>No active jobs posted yet. Be the first employer to post an opportunity.</div>";return}rows.forEach(r=>{const item=normalizeJobRow(r),card=document.createElement("article");card.className="job-card";const h=document.createElement("h3");h.textContent=item.title;card.append(h);const meta=document.createElement("p");meta.className="small";meta.textContent=[item.company,item.type,item.location,item.salary].filter(Boolean).join(" · ");card.append(meta);const desc=document.createElement("p");desc.textContent=item.description;card.append(desc);if(item.requirements){const req=document.createElement("p");req.className="small";req.textContent="Requirements: "+item.requirements;card.append(req)}const inst=document.createElement("p");inst.className="small";inst.textContent="How to apply: "+item.instructions;card.append(inst);const actions=document.createElement("div");actions.className="actions";const phoneMatch=item.instructions.match(/(?:\+?254|0)(?:[17]\d{8})/);const emailMatch=item.instructions.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);if(phoneMatch){let phone=phoneMatch[0].replace(/\D/g,"");if(phone.startsWith("0"))phone="254"+phone.slice(1);const b=document.createElement("button");b.textContent="Contact employer";b.onclick=()=>window.open("https://wa.me/"+phone+"?text="+encodeURIComponent("Hello, I am interested in applying for "+item.title+" on Egerton Market."),"_blank","noopener,noreferrer");actions.append(b)}else if(emailMatch){const b=document.createElement("button");b.textContent="Email employer";b.onclick=()=>window.location.href="mailto:"+emailMatch[0]+"?subject="+encodeURIComponent("Application: "+item.title);actions.append(b)}if(item.employerId===currentSession?.user?.id){const b=document.createElement("button");b.className="secondary";b.textContent="Close job";b.onclick=async()=>{if(!confirm("Close this job listing?"))return;const {error}=await supabase.from("job_listings").update({is_active:false}).eq("id",item.id).eq("employer_id",currentSession.user.id);if(error)jobsNotice("Could not close job: "+error.message,true);else{jobsNotice("Job closed.");await loadJobs()}};actions.append(b)}card.append(actions);box.append(card)})}
+async function loadJobs(){if(!currentSession){$("jobListings").innerHTML="<div class='empty'>Sign in to view and post campus jobs.</div>";$("jobSeekers").innerHTML="<div class='empty'>Sign in to view job-seeker profiles.</div>";return}$("jobListings").innerHTML="<div class='empty'>Loading jobs…</div>";const {data,error}=await supabase.from("job_listings").select("*").eq("is_active",true).order("created_at",{ascending:false});if(error){$("jobListings").innerHTML="<div class='empty'>Could not load jobs: "+String(error.message).replace(/</g,"&lt;")+"</div>"}else renderJobs(data||[]);await loadJobSeekers()}
+async function loadJobSeekers(){const box=$("jobSeekers");if(!currentSession){box.innerHTML="<div class='empty'>Sign in to view profiles.</div>";return}box.innerHTML="<div class='empty'>Loading job-seeker profiles…</div>";const {data,error}=await supabase.from("job_seeker_profiles").select("*").eq("is_available",true).order("created_at",{ascending:false}).limit(100);if(error){box.innerHTML="<div class='empty'>Job-seeker profiles need the database update. Details: "+String(error.message).replace(/</g,"&lt;")+"</div>";return}box.replaceChildren();const people=(data||[]);if(!people.length){box.innerHTML="<div class='empty'>No student job-seeker profiles yet. Add your details using ‘Find work / add my details’.</div>";return}people.forEach(p=>{const card=document.createElement("article");card.className="job-card";const h=document.createElement("h3");h.textContent=p.display_name;card.append(h);const meta=document.createElement("p");meta.className="small";meta.textContent=[p.course_or_qualification,p.desired_role,p.desired_job_type,p.preferred_location,p.availability].filter(Boolean).join(" · ");card.append(meta);const skills=document.createElement("p");skills.textContent=p.skills_experience||"";card.append(skills);if(p.bio){const bio=document.createElement("p");bio.textContent=p.bio;card.append(bio)}const contact=document.createElement("p");contact.className="small";contact.textContent=[p.contact_phone,p.contact_email].filter(Boolean).join(" · ")||"No contact details shared";card.append(contact);if(p.user_id===currentSession.user.id){const b=document.createElement("button");b.className="secondary";b.textContent="Edit my details";b.onclick=()=>showJobSeekerPanel();card.append(b)}box.append(card)})}
+function showJobSeekerPanel(){$("jobPostPanel").classList.add("hidden");$("jobSeekerPanel").classList.remove("hidden")}
+$("showJobPost").addEventListener("click",()=>{$("jobSeekerPanel").classList.add("hidden");$("jobPostPanel").classList.remove("hidden")});$("showJobSeeker").addEventListener("click",showJobSeekerPanel);$("refreshJobs").addEventListener("click",loadJobs);
+$("jobPostForm").addEventListener("submit",async e=>{e.preventDefault();if(!currentSession){showSignedOut("Sign in before posting a job.");return}const btn=$("publishJobBtn");btn.disabled=true;try{const row={employer_id:currentSession.user.id,job_title:$("jobTitle").value.trim(),company_name:$("jobCompany").value.trim()||null,job_type:$("jobType").value,location:$("jobLocation").value.trim(),salary_range:$("jobSalary").value.trim()||null,description:$("jobDescription").value.trim(),requirements:$("jobRequirements").value.trim()||null,application_instructions:$("jobApplyInstructions").value.trim(),is_active:true};const {error}=await supabase.from("job_listings").insert(row);if(error)throw error;$ ("jobPostForm").reset();jobsNotice("Job published. Students can now see the opportunity.");await loadJobs()}catch(err){jobsNotice("Could not publish job: "+err.message,true)}finally{btn.disabled=false}});
+$("jobSeekerForm").addEventListener("submit",async e=>{e.preventDefault();if(!currentSession){showSignedOut("Sign in before saving a job-seeker profile.");return}const btn=$("saveSeekerBtn");btn.disabled=true;try{const row={user_id:currentSession.user.id,display_name:$("seekerName").value.trim(),course_or_qualification:$("seekerCourse").value.trim()||null,skills_experience:$("seekerSkills").value.trim(),desired_role:$("seekerRole").value.trim(),desired_job_type:$("seekerType").value,preferred_location:$("seekerLocation").value.trim()||null,availability:$("seekerAvailability").value.trim()||null,contact_phone:$("seekerPhone").value.trim()||null,contact_email:$("seekerEmail").value.trim()||null,bio:$("seekerBio").value.trim()||null,is_available:$("seekerAvailable").checked};const {error}=await supabase.from("job_seeker_profiles").upsert(row,{onConflict:"user_id"});if(error)throw error;jobsNotice("Your job-seeker profile has been saved.");await loadJobSeekers()}catch(err){jobsNotice("Could not save job-seeker profile: "+err.message,true)}finally{btn.disabled=false}});
+function comradeMessage(message,error=false){const el=$("comradeNotice");if(!el)return;el.textContent=message;el.className="notice"+(error?" error":"");el.style.display="block"}
+let comradePhotoData="", savedComradePhotoUrl="";
+function setComradePhoto(url){savedComradePhotoUrl=url||"";const img=$("comradePhotoPreview"),initial=$("comradePhotoInitial"),mainAvatar=$("avatar");if(url){img.src=url;img.style.display="block";initial.style.display="none";mainAvatar.style.backgroundImage="url(\""+url+"\")";mainAvatar.style.backgroundSize="cover";mainAvatar.style.backgroundPosition="center";mainAvatar.textContent="";}else{img.removeAttribute("src");img.style.display="none";initial.style.display="grid";initial.textContent=(($("comradeName").value||"S").trim().charAt(0)||"S").toUpperCase();mainAvatar.style.backgroundImage="none";mainAvatar.textContent=(($("comradeName").value||"U").trim().charAt(0)||"U").toUpperCase();}}
+$("chooseComradePhoto").addEventListener("click",()=>$ ("comradePhotoFile").click());
+$("takeComradePhoto").addEventListener("click",()=>$ ("comradeCameraFile").click());
+$("removeComradePhoto").addEventListener("click",()=>{comradePhotoData="";setComradePhoto("");comradeMessage("Photo removed from this form. Save your profile to apply the change.")});
+$("comradePhotoFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith("image/")){comradeMessage("Choose an image from your photos.",true);return}if(file.size>12*1024*1024){comradeMessage("Choose a photo smaller than 12 MB.",true);e.target.value="";return}try{comradePhotoData=await window.compressImage(file);setComradePhoto(comradePhotoData);comradeMessage("Photo preview ready. Tap Save Comrade profile to upload it.")}catch(err){comradeMessage("Could not read that photo: "+err.message,true)}finally{e.target.value=""}});$("comradeCameraFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{comradePhotoData=await window.compressImage(file);setComradePhoto(comradePhotoData);comradeMessage("Camera photo ready. Tap Save Comrade profile to upload it.")}catch(err){comradeMessage("Could not read that photo: "+err.message,true)}e.target.value=""});
+async function loadComradeProfile(){if(!currentSession)return;const {data,error}=await supabase.from("comrade_profiles").select("*").eq("user_id",currentSession.user.id).maybeSingle();if(error){comradeMessage("Could not load profile: "+error.message,true);return}const p=data||{};$("comradeName").value=p.display_name||currentSession.user.user_metadata?.full_name||currentSession.user.email?.split("@")[0]||"";$("comradeAge").value=p.age||"";$("comradeCourse").value=p.course||"";$("comradeCounty").value=p.home_county||"";$("comradeGoal").value=p.connection_goal||"friendship";$("comradeCampus").value=p.campus||"Egerton University";$("comradeBio").value=p.bio||"";$("comradeReligion").value=p.religion||"Prefer not to say";$("comradeVisible").checked=p.is_visible!==false;comradePhotoData="";setComradePhoto(p.profile_photo_url||"");await loadComradeProfiles()}
+async function loadComradeProfiles(){const box=$("comradeProfiles");if(!currentSession){box.innerHTML="<div class='empty'>Sign in to discover students.</div>";return}box.innerHTML="<div class='empty'>Loading student profiles…</div>";const {data,error}=await supabase.from("comrade_profiles").select("user_id,display_name,profile_photo_url,age,course,campus,home_county,bio,connection_goal,dating_enabled,created_at").eq("is_visible",true).order("created_at",{ascending:false}).limit(60);if(error){box.innerHTML="<div class='empty'>Could not load profiles: "+String(error.message).replace(/</g,"&lt;")+"</div>";return}box.replaceChildren();const people=(data||[]).filter(p=>p.user_id!==currentSession.user.id);if(!people.length){box.innerHTML="<div class='empty'>No other visible profiles yet. Save your profile and invite classmates to join.</div>";return}people.forEach(p=>{const card=document.createElement("article");card.className="comrade-card";const photo=document.createElement("img");photo.className="student-photo";photo.alt=p.display_name+" profile photo";photo.src=p.profile_photo_url||"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%23e9f5ed'/%3E%3Ctext x='100' y='120' font-size='80' text-anchor='middle' fill='%23176b45'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";card.append(photo);const name=document.createElement("h3");name.textContent=p.display_name;card.append(name);const details=[p.age?`${p.age} years old`:"",p.course||"",p.campus||"",p.home_county?"From "+p.home_county:"",({friendship:"Friendship",study_partner:"Study partner",dating:"Dating",all:"Open to all"})[p.connection_goal]||""].filter(Boolean);const line=document.createElement("p");line.className="small";line.textContent=details.join(" · ");card.append(line);if(p.bio){const bio=document.createElement("p");bio.textContent=p.bio;card.append(bio)}const button=document.createElement("button");button.textContent="Request chat · KSh 25";button.addEventListener("click",()=>comradeMessage("Chat payments are not connected yet. We must add verified M-Pesa payment processing before this button can open a paid conversation."));card.append(button);box.append(card)})}
+$("comradeProfileForm").addEventListener("submit",async e=>{e.preventDefault();if(!currentSession){comradeMessage("Please sign in first.",true);return}const ageText=$("comradeAge").value;const age=ageText?Number(ageText):null;const goal=$("comradeGoal").value;if(goal==="dating"&&(!age||age<18)){comradeMessage("Dating profiles are available only to adults aged 18 or older.",true);return}const btn=$("saveComradeProfile");btn.disabled=true;try{let photoUrl=savedComradePhotoUrl;if(comradePhotoData){const blob=dataUrlToBlob(comradePhotoData);const path=currentSession.user.id+"/profile-"+crypto.randomUUID()+".jpg";const {error:upErr}=await supabase.storage.from("listing-photos").upload(path,blob,{contentType:"image/jpeg",upsert:false});if(upErr)throw upErr;photoUrl=supabase.storage.from("listing-photos").getPublicUrl(path).data.publicUrl;}const payload={user_id:currentSession.user.id,display_name:$("comradeName").value.trim(),age,course:$("comradeCourse").value.trim()||null,home_county:$("comradeCounty").value.trim()||null,connection_goal:goal,campus:$("comradeCampus").value.trim()||"Egerton University",bio:$("comradeBio").value.trim()||null,religion:$("comradeReligion").value||null,is_visible:$("comradeVisible").checked,dating_enabled:goal==="dating",profile_photo_url:photoUrl||null};const {error}=await supabase.from("comrade_profiles").upsert(payload,{onConflict:"user_id"});if(error)throw error;comradePhotoData="";setComradePhoto(photoUrl);comradeMessage("Your Comrade profile is saved.");await loadComradeProfiles()}catch(err){comradeMessage("Could not save profile: "+err.message,true)}finally{btn.disabled=false}});
+$("refreshComrades").addEventListener("click",loadComradeProfiles);
+const originalShowView=window.showView;window.showView=function(view){originalShowView(view);if(view==="chats")loadComradeProfile();if(view==="jobs"){loadJobs();prefillJobSeeker()}};
+async function prefillJobSeeker(){if(!currentSession)return;const {data}=await supabase.from("job_seeker_profiles").select("*").eq("user_id",currentSession.user.id).maybeSingle();if(!data){$("seekerName").value=currentSession.user.user_metadata?.full_name||currentSession.user.email?.split("@")[0]||"";return}const map={seekerName:"display_name",seekerCourse:"course_or_qualification",seekerSkills:"skills_experience",seekerRole:"desired_role",seekerType:"desired_job_type",seekerLocation:"preferred_location",seekerAvailability:"availability",seekerPhone:"contact_phone",seekerEmail:"contact_email",seekerBio:"bio"};Object.entries(map).forEach(([el,key])=>{if(data[key]!=null)$(el).value=data[key]});$("seekerAvailable").checked=data.is_available!==false}
+
+$("listingForm").addEventListener("submit",publishListing,true);
+$("authSwitchText").addEventListener("click",event=>{if(event.target?.id==="authSwitch"){event.preventDefault();event.stopImmediatePropagation();setMode(window.__egertonAuthMode==="signup"?"login":"signup")}},true);
+$("authForm").addEventListener("submit",async event=>{event.preventDefault();event.stopImmediatePropagation();if(authBusy)return;authBusy=true;const button=$("authSubmit");button.disabled=true;try{const mode=window.__egertonAuthMode||"login",email=$("authEmail").value.trim(),password=$("authPassword").value;clearAuthMessage();if(mode==="signup"){const name=$("authName").value.trim();if(!name)throw Error("Enter your full name.");if(password.length<8)throw Error("Use at least 8 characters for your password.");if(password!==$("authConfirmPassword").value)throw Error("The passwords do not match.");const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin}});if(error)throw error;if(data.session)showSignedIn(data.session);else{setMode("login");authMessage("Account created. If email confirmation is enabled, check your inbox before signing in.")}}else if(mode==="forgot"){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});if(error)throw error;authMessage("If the account exists, a password reset email has been sent.")}else{const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;if(!data.session)throw Error("No session was created. Check whether your email needs confirmation.");showSignedIn(data.session)}}catch(error){authMessage(error.message||"Authentication failed.",true)}finally{authBusy=false;button.disabled=false;button.textContent=window.__egertonAuthMode==="signup"?"Create account":window.__egertonAuthMode==="forgot"?"Send reset email":"Sign in"}},true);
+$("forgotBtn").addEventListener("click",()=>setMode("forgot"));
+document.querySelectorAll("[data-toggle-password]").forEach(button=>button.addEventListener("click",()=>{const field=$(button.dataset.togglePassword),show=field.type==="password";field.type=show?"text":"password";button.textContent=show?"Hide":"Show"}));
+$("headerAccount").addEventListener("click",()=>{if(currentSession)window.showView("profile");else showSignedOut()},true);
+document.addEventListener("click",event=>{const nav=event.target.closest(".bottomnav button");if(!nav)return;if(!currentSession){event.preventDefault();event.stopImmediatePropagation();showSignedOut("Please sign in to use the marketplace.");return}if(nav.dataset.view==="sell"){$("seller").value=currentSession.user.user_metadata?.full_name||currentSession.user.email?.split("@")[0]||""}},true);
+window.logoutLocal=async function(){if(!confirm("Sign out of Egerton Market?"))return;const {error}=await supabase.auth.signOut();if(error){alert("Could not sign out: "+error.message);return}showSignedOut("You have signed out.")};
+supabase.auth.onAuthStateChange((event,session)=>{currentSession=session;window.__egertonSession=session;if(session){showSignedIn(session)}else if(event!=="INITIAL_SESSION"){showSignedOut()}});
+(async()=>{setMode("login");const {data,error}=await supabase.auth.getSession();if(error){showSignedOut("Could not check your session: "+error.message);return}if(data.session)showSignedIn(data.session);else showSignedOut()})();
+</script>
+
+</body>
+</html>
