@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comrade Call & Signaling Interface</title>
+<!-- Tailwind CSS for styling -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Supabase JS Client Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+​<div class="w-full max-w-4xl bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
+<header class="bg-slate-700/50 p-6 border-b border-slate-700 flex justify-between items-center">
+<h1 class="text-2xl font-bold tracking-tight text-indigo-400">Comrade WebRTC Call App</h1>
+<div id="auth-status" class="text-sm text-slate-400">Not signed in</div>
+</header>
+​<main class="p-6 space-y-6">
+<!-- Authentication Section -->
+<section id="auth-section" class="space-y-4">
+<h2 class="text-lg font-semibold text-slate-200">1. Authentication</h2>
+<div class="flex gap-4">
+<input type="email" id="email" placeholder="Email" class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:border-indigo-500">
+<input type="password" id="password" placeholder="Password" class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:border-indigo-500">
+<button id="sign-in-btn" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-medium transition">Sign In</button>
+</div>
+</section>
+​<!-- Call Control Section -->
+<section id="call-section" class="space-y-4 opacity-50 pointer-events-none transition-opacity">
+<h2 class="text-lg font-semibold text-slate-200">2. Start or Answer Call</h2>
+<p class="text-xs text-slate-400">Note: Caller and callee must already have a shared row in comrade_conversations.</p>
+<div class="flex gap-4">
+<input type="text" id="callee-id" placeholder="Callee User ID (UUID)" class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 flex-1 focus:outline-none focus:border-indigo-500">
+<button id="start-call-btn" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-2 rounded-lg font-medium transition">Start Video Call</button>
+</div>
+</section>
+​<!-- Active Call & Video Display -->
+<section id="video-section" class="grid grid-cols-2 gap-4 hidden">
+<div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-video border border-slate-700 flex items-center justify-center">
+<span class="absolute bottom-3 left-3 text-xs bg-slate-800/80 px-2 py-1 rounded">Local Video</span>
+<video id="local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+</div>
+<div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-video border border-slate-700 flex items-center justify-center">
+<span class="absolute bottom-3 left-3 text-xs bg-slate-800/80 px-2 py-1 rounded">Remote Video</span>
+<video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+</div>
+</section>
+​<!-- Incoming Call Modal / Notification area -->
+<div id="incoming-call-banner" class="hidden bg-indigo-950/80 border border-indigo-500/50 p-4 rounded-xl flex items-center justify-between">
+<div>
+<p class="font-medium text-indigo-200">Incoming Video Call...</p>
+<p id="caller-info" class="text-xs text-indigo-400">Someone is calling you.</p>
+</div>
+<div class="flex gap-3">
+<button id="answer-call-btn" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-sm font-medium">Answer</button>
+<button id="reject-call-btn" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-lg text-sm font-medium">Decline</button>
+</div>
+</div>
+​<!-- Error Console Log -->
+<section class="space-y-2">
+<h3 class="text-sm font-medium text-slate-400">Diagnostic Console Log</h3>
+<div id="console-log" class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 h-32 overflow-y-auto border border-slate-800"></div>
+</section>
+</main>
+</div>
+​<script>
+// Helper to log errors & status neatly
+function logMessage(msg, isError = false) {
+const box = document.getElementById('console-log');
+const time = new Date().toLocaleTimeString();
+box.innerHTML += <div class="${isError ? 'text-rose-400 font-bold' : 'text-slate-300'}">[${time}] ${msg}</div>;
+box.scrollTop = box.scrollHeight;
+if (isError) console.error(msg);
+}
+​// Initialize Supabase client (Replace with your actual project URL and anon key)
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+​let supabaseClient;
+let currentUser = null;
+let activeCallId = null;
+let peerConnection = null;
+let localStream = null;
+let pollInterval = null;
+​const ICE_SERVERS = {
+iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+};
+​try {
+supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (err) {
+logMessage("Failed to initialize Supabase: " + err.message, true);
+}
+​// 1. Authentication Handler
+document.getElementById('sign-in-btn').addEventListener('click', async () => {
+const email = document.getElementById('email').value;
+const password = document.getElementById('password').value;
+​const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+if (error) {
+logMessage("Sign in error: " + error.message, true);
+} else {
+currentUser = data.user;
+document.getElementById('auth-status').innerText = Signed in as: ${currentUser.email};
+document.getElementById('call-section').classList.remove('opacity-50', 'pointer-events-none');
+logMessage("Signed in successfully. User ID: " + currentUser.id);
+startListeningForIncomingCalls();
+}
+});
+​// Initialize Media Streams
+async function setupMedia() {
+try {
+localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+document.getElementById('local-video').srcObject = localStream;
+return true;
+} catch (err) {
+logMessage("Media error (Camera/Mic access): " + err.message, true);
+return false;
+}
+}
+​function createPeerConnection(callId, receiverId) {
+peerConnection = new RTCPeerConnection(ICE_SERVERS);
+​if (localStream) {
+localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+}
+​peerConnection.ontrack = (event) => {
+document.getElementById('remote-video').srcObject = event.streams[0];
+document.getElementById('video-section').classList.remove('hidden');
+};
+​// Requirement 1: ICE candidate JSONB format using signal: { kind, payload }
+peerConnection.onicecandidate = async (e) => {
+if (e.candidate) {
+const { error } = await supabaseClient.from('signals').insert({
+call_id: callId,
+sender_id: currentUser.id,
+signal: { kind: "ice", payload: e.candidate.toJSON() }
+});
+if (error) logMessage("ICE send error: " + error.message, true);
+}
+};
+}
+​// 2. Start Call Implementation
+document.getElementById('start-call-btn').addEventListener('click', async () => {
+const calleeId = document.getElementById('callee-id').value;
+if (!calleeId) return alert("Please provide a callee ID.");
+​if (!await setupMedia()) return;
+​// Requirement 2: media_type must be "video" according to policies
+const { data: callData, error: callError } = await supabaseClient.from('calls').insert({
+caller_id: currentUser.id,
+callee_id: calleeId,
+media_type: "video",
+status: "pending"
+}).select().single();
+​if (callError) {
+logMessage("Call insert failed: " + callError.message, true);
+return;
+}
+​activeCallId = callData.id;
+logMessage(Call created with ID: ${activeCallId});
+​createPeerConnection(activeCallId, calleeId);
+​const offer = await peerConnection.createOffer();
+await peerConnection.setLocalDescription(offer);
+​// Requirement 1: Send offer signal using signal: { kind, payload }
+const { error: signalError } = await supabaseClient.from('signals').insert({
+call_id: activeCallId,
+sender_id: currentUser.id,
+signal: { kind: "offer", payload: offer }
+});
+​if (signalError) {
+logMessage("Offer signal error: " + signalError.message, true);
+return;
+}
+​document.getElementById('video-section').classList.remove('hidden');
+pollForAcceptedOrRejected(activeCallId);
+});
+​// Listen for incoming calls
+function startListeningForIncomingCalls() {
+supabaseClient
+.channel('public:calls')
+.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'calls', filter: callee_id=eq.${currentUser.id} }, payload => {
+const newCall = payload.new;
+if (newCall.status === 'pending') {
+activeCallId = newCall.id;
+document.getElementById('incoming-call-banner').classList.remove('hidden');
+document.getElementById('caller-info').innerText = Caller ID: ${newCall.caller_id};
+}
+})
+.subscribe();
+}
+​// Answer Call Handling
+document.getElementById('answer-call-btn').addEventListener('click', async () => {
+document.getElementById('incoming-call-banner').classList.add('hidden');
+if (!await setupMedia()) return;
+​// Requirement 2: Update call status to "accepted" instead of "active"
+const { error: updateError } = await supabaseClient
+.from('calls')
+.update({ status: 'accepted' })
+.eq('id', activeCallId);
+​if (updateError) {
+logMessage("Failed to accept call: " + updateError.message, true);
+return;
+}
+​createPeerConnection(activeCallId);
+​// Requirement 1: Read signals selecting id, signal, sender_id and reading sig.signal.kind / payload
+const { data: signals, error: sigError } = await supabaseClient
+.from('signals')
+.select('id, signal, sender_id')
+.eq('call_id', activeCallId);
+​if (sigError) {
+logMessage("Error fetching signals: " + sigError.message, true);
+return;
+}
+​const offerSignal = signals.find(s => s.signal && s.signal.kind === 'offer');
+if (offerSignal) {
+await peerConnection.setRemoteDescription(new RTCSessionDescription(offerSignal.signal.payload));
+const answer = await peerConnection.createAnswer();
+await peerConnection.setLocalDescription(answer);
+​await supabaseClient.from('signals').insert({
+call_id: activeCallId,
+sender_id: currentUser.id,
+signal: { kind: "answer", payload: answer }
+});
+​// Process any accumulated ICE candidates
+signals.filter(s => s.signal && s.signal.kind === 'ice').forEach(async (iceSig) => {
+try {
+await peerConnection.addIceCandidate(new RTCIceCandidate(iceSig.signal.payload));
+} catch (e) {
+logMessage("ICE add error: " + e.message, true);
+}
+});
+}
+​document.getElementById('video-section').classList.remove('hidden');
+pollForSignals(activeCallId);
+});
+​// Reject Call Handling
+document.getElementById('reject-call-btn').addEventListener('click', async () => {
+document.getElementById('incoming-call-banner').classList.add('hidden');
+// Requirement 2: Use "rejected" status for declines
+await supabaseClient
+.from('calls')
+.update({ status: 'rejected' })
+.eq('id', activeCallId);
+logMessage("Call rejected.");
+});
+​// Polling loop for caller to check if call is accepted or rejected
+function pollForAcceptedOrRejected(callId) {
+pollInterval = setInterval(async () => {
+const { data, error } = await supabaseClient
+.from('calls')
+.select('status')
+.eq('id', callId)
+.single();
+​if (error) return;
+​if (data.status === 'accepted') {
+clearInterval(pollInterval);
+logMessage("Call accepted by remote peer. Exchanging signals...");
+fetchAndProcessAnswerAndIce(callId);
+} else if (data.status === 'rejected') { // Requirement 2: update polling check to look for "rejected"
+clearInterval(pollInterval);
+logMessage("Call was rejected by callee.", true);
+alert("Call was declined.");
+}
+}, 2000);
+}
+​async function fetchAndProcessAnswerAndIce(callId) {
+const { data: signals } = await supabaseClient
+.from('signals')
+.select('id, signal, sender_id')
+.eq('call_id', callId);
+​const answerSignal = signals.find(s => s.signal && s.signal.kind === 'answer');
+if (answerSignal && peerConnection.signalingState !== 'stable') {
+await peerConnection.setRemoteDescription(new RTCSessionDescription(answerSignal.signal.payload));
+}
+​signals.filter(s => s.signal && s.signal.kind === 'ice' && s.sender_id !== currentUser.id).forEach(async (iceSig) => {
+try {
+await peerConnection.addIceCandidate(new RTCIceCandidate(iceSig.signal.payload));
+} catch (err) {}
+});
+​pollForSignals(callId);
+}
+​function pollForSignals(callId) {
+setInterval(async () => {
+const { data: signals } = await supabaseClient
+.from('signals')
+.select('id, signal, sender_id')
+.eq('call_id', callId);
+​if (signals) {
+for (const s of signals) {
+if (s.sender_id !== currentUser.id && s.signal && s.signal.kind === 'ice') {
+try {
+await peerConnection.addIceCandidate(new RTCIceCandidate(s.signal.payload));
+} catch (e) {}
+}
+}
+}
+}, 3000);
+}
+</script>
+</body>
+</html>
